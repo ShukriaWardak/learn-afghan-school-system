@@ -42,3 +42,6 @@ Based on the *LEARN Afghan Central Database Development Proposal*: a secure cent
 
 ## Phase 2: PHP/MySQL groundwork
 The repository now includes `database/schema.sql` and a separate `backend/` with configuration template and read-only session-protected branch API. This is scaffolding only: authentication, real user accounts, real data, approvals, server auditing, and secure deployment are **not yet implemented**. See [backend/README.md](backend/README.md). Do not enter confidential data into the browser demo.
+
+## Phase 3: authentication foundation
+The backend now includes `backend/api/login.php`, `logout.php`, `csrf.php`, `session.php`, and authorization checks for the branch list. Apply `database/002_login_attempts.sql` after the main schema. These endpoints have **not yet been tested in a running XAMPP installation**, and the frontend is **not connected**. No real accounts are pre-created. See [backend setup](backend/README.md). Do not deploy or enter real personal data until security work and testing are completed.
