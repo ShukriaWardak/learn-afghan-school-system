@@ -1,0 +1,9 @@
+backend/config.local.php
+.env
+.env.*
+!.env.example
+*.sqlite
+*.sqlite3
+*.sql.gz
+vendor/
+node_modules/
