@@ -39,3 +39,6 @@ If `git status` shows local modifications, save/commit or otherwise handle them 
 
 ## Scope
 Based on the *LEARN Afghan Central Database Development Proposal*: a secure centralized system for three zones, 25 branches, departments, forms, access controls, approved reporting and backups. Phase 1 prioritizes administrative data entry rather than advanced school-management features.
+
+## Phase 2: PHP/MySQL groundwork
+The repository now includes `database/schema.sql` and a separate `backend/` with configuration template and read-only session-protected branch API. This is scaffolding only: authentication, real user accounts, real data, approvals, server auditing, and secure deployment are **not yet implemented**. See [backend/README.md](backend/README.md). Do not enter confidential data into the browser demo.
