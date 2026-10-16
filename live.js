@@ -1,7 +1,7 @@
 "use strict";
 /* Authenticated admin integration. The existing localStorage prototype is a separate, labelled demo. */
 const Live = {
-  active: false, user: null, csrf: null, zones: [],
+  active: false, user: null, csrf: null, zones: [], users: [], events: [], pageLoading: false, pageError: "",
   async request(path, options={}) {
     const response=await fetch("backend/api/"+path, {credentials:"same-origin",cache:"no-store",...options});
     let data={};
@@ -30,7 +30,7 @@ const Live = {
     document.querySelector("#retryServer").onclick=()=>this.init();
   },
   showLogin() {
-    this.active=false;
+    this.active=false;this.users=[];this.events=[];
     this.showScreen('<form class="auth-card" id="loginForm" autocomplete="on"><div class="auth-logo">▤</div><span class="eyebrow">LEARN AFGHAN · CENTRAL DATABASE</span><h1>Sign in</h1><p class="muted">Use your approved administrative account. Demo data is not used for authentication.</p><label for="loginUser">Username</label><input class="field" id="loginUser" name="username" autocomplete="username" maxlength="100" required><label for="loginPassword">Password</label><input class="field" id="loginPassword" type="password" name="password" autocomplete="current-password" required><p id="loginError" class="auth-error" role="alert" aria-live="polite"></p><button type="submit" class="primary-btn" id="submitLogin">Sign in securely</button><small>This system is in development. Do not use it with real confidential records until deployment is approved.</small></form>');
     document.querySelector("#loginForm").onsubmit=async e=>{
       e.preventDefault();
@@ -114,6 +114,34 @@ const Live = {
       document.querySelector("#logout").hidden=true;
       this.showLogin();
     } catch(error) {toast("Sign-out failed: "+error.message);}
+  },
+
+  async loadPage(page) {
+    if (!this.active || this.user.role!=="super_admin" || !["users","audit"].includes(page)) return;
+    this.pageLoading=true;this.pageError="";render();
+    try {
+      const response=await this.request(page+".php");
+      if (page==="users") this.users=response.users||[];
+      else this.events=response.events||[];
+    } catch(error) {this.pageError=error.message;}
+    this.pageLoading=false;
+    if (current===page) render();
+  },
+  usersView() {
+    if (this.user.role!=="super_admin")return heading("Users & Permissions","Your role does not permit reading the user directory.")+'<div class="note">Access restricted.</div>';
+    const caption='<p class="muted">Read-only account directory · first 200 accounts. Passwords and password hashes are never returned.</p>';
+    if (this.pageLoading)return heading("Users & Permissions","Authorized server records")+panel("Accounts",'<div class="empty">Loading accounts…</div>');
+    if (this.pageError)return heading("Users & Permissions","Authorized server records")+'<div class="note">'+escapeHtml(this.pageError)+'</div>';
+    const rows=this.users.map(u=>'<tr><td>'+escapeHtml(u.display_name)+'</td><td>'+escapeHtml(u.username)+'</td><td>'+escapeHtml(u.role.replaceAll("_"," "))+'</td><td>'+escapeHtml(u.zone_name||"—")+'</td><td>'+escapeHtml(u.branch_name||"—")+'</td><td>'+escapeHtml(u.department_name||"—")+'</td><td>'+statusBadge(Number(u.active)===1?"Active":"Inactive")+'</td></tr>').join("");
+    return heading("Users & Permissions","Authorized server records")+panel("Account directory",caption+(rows?'<div class="table-wrap"><table><thead><tr><th>Name</th><th>Username</th><th>Role</th><th>Zone</th><th>Branch</th><th>Department</th><th>Status</th></tr></thead><tbody>'+rows+'</tbody></table></div>':'<div class="empty">No accounts are configured.</div>'));
+  },
+  auditView() {
+    if (this.user.role!=="super_admin")return heading("Audit History","Your role does not permit reading the audit history.")+'<div class="note">Access restricted.</div>';
+    if (this.pageLoading)return heading("Audit History","Recent server-side actions")+panel("Recent events",'<div class="empty">Loading audit events…</div>');
+    if (this.pageError)return heading("Audit History","Recent server-side actions")+'<div class="note">'+escapeHtml(this.pageError)+'</div>';
+    const rows=this.events.map(a=>'<tr><td>'+escapeHtml(a.created_at)+'</td><td>'+escapeHtml(a.actor||"System")+'</td><td>'+escapeHtml(a.action)+'</td><td>'+escapeHtml(a.entity_type)+'</td><td>'+escapeHtml(a.entity_id||"—")+'</td></tr>').join("");
+    return heading("Audit History","Last 100 server-side events. Login-attempt logs are stored separately. Change details are intentionally excluded from this UI.")
+      +panel("Audit event history",rows?'<div class="table-wrap"><table><thead><tr><th>Time</th><th>Actor</th><th>Action</th><th>Entity</th><th>Record ID</th></tr></thead><tbody>'+rows+'</tbody></table></div>':'<div class="empty">No audit events have been written yet.</div>');
   },
   overview() {
     const rows=state.branches;
