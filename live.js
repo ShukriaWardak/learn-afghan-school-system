@@ -39,9 +39,9 @@ const Live = {
       btn.disabled=true; message.textContent="";
       try {
         const token=await this.request("csrf.php");
-        const credentials={username:form.username.value.trim(),password:form.password.value};
+        const credentials={username:form.elements.namedItem("username").value.trim(),password:form.elements.namedItem("password").value};
         const response=await this.request("login.php",{method:"POST",headers:{"Content-Type":"application/json","X-CSRF-Token":token.csrf_token},body:JSON.stringify(credentials)});
-        form.password.value="";
+        form.elements.namedItem("password").value="";
         this.user=response.user;
         this.csrf=response.csrf_token;
         this.active=true;
