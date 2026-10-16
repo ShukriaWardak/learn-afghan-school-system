@@ -1,0 +1,26 @@
+name: Backend and frontend syntax checks
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+      - feature/live-admin-integration
+jobs:
+  syntax:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: JavaScript syntax
+        run: |
+          node --check app.js
+          node --check live.js
+      - name: PHP syntax
+        run: |
+          find backend -type f -name '*.php' -print0 | xargs -0 -n1 php -l
+      - name: Required files
+        run: |
+          test -f database/schema.sql
+          test -f database/002_login_attempts.sql
+          test -f backend/api/branch_update.php
+          test -f backend/api/zone_create.php
+          test -f backend/api/audit.php
