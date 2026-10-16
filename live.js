@@ -157,10 +157,35 @@ const Live = {
       +'<div class="note">Signed in as '+label+'. The staff, financial, safeguarding, approval and backup modules are NOT live yet. Do not enter sensitive records until security testing and organizational approval are complete.</div>';
   },
   zonesView() {
-    return heading("Zones","Only zones authorized for your account are shown.")
+    return heading("Zones","Only zones authorized for your account are shown.",this.user.role==="super_admin"?'<button class="primary-btn" id="addZone">+ Add approved zone</button>':"")
       +panel("Database zones",this.zones.length?'<div class="zones">'+this.zones.map(z=>
         '<div class="zone"><div class="zone-title">'+escapeHtml(z.name)+'</div><small>'+escapeHtml(z.code)+'</small><div class="zone-stat">'+state.branches.filter(b=>b.zone_id===z.id).length+' branches</div></div>').join("")+'</div>':
         '<div class="empty">No zones assigned or entered in the database.</div>');
+  },
+
+  openCreateModal(kind) {
+    if (!this.active||this.user.role!=="super_admin") {toast("Only super administrators can create records.");return;}
+    if (kind==="branch" && !this.zones.length) {toast("Create an approved zone first.");return;}
+    if (!["zone","branch"].includes(kind))return;
+    const branch=kind==="branch",layer=document.createElement("div");
+    layer.className="modal-overlay";
+    const inputs=branch?'<label>Zone<select id="createZoneId" class="field">'+this.zones.map(z=>'<option value="'+z.id+'">'+escapeHtml(z.name)+'</option>').join("")+'</select></label><label>Location (optional)<input id="createLocation" class="field" maxlength="250"></label>':"";
+    layer.innerHTML='<form class="modal" id="createRecord"><h2>Create approved '+kind+'</h2><p class="muted">Only enter official organization-approved information. Creation will be recorded in server audit history.</p><div class="form-grid"><label>Code<input class="field" id="createCode" pattern="[a-zA-Z0-9_-]{2,30}" maxlength="30" required placeholder="'+(branch?"BR_01":"ZONE_01")+'"></label><label>Name<input class="field" id="createName" maxlength="'+(branch?180:150)+'" required></label>'+inputs+'</div><p class="auth-error" id="createError" role="alert"></p><div class="modal-actions"><button type="button" id="cancelCreate" class="ghost-btn">Cancel</button><button class="primary-btn" id="confirmCreate" type="submit">Create '+kind+'</button></div></form>';
+    document.body.append(layer);
+    const get=id=>layer.querySelector("#"+id);
+    get("cancelCreate").onclick=()=>layer.remove();
+    layer.onclick=e=>{if(e.target===layer)layer.remove();};
+    get("createRecord").onsubmit=async e=>{
+      e.preventDefault();
+      const button=get("confirmCreate");button.disabled=true;get("createError").textContent="";
+      const body={code:get("createCode").value.trim(),name:get("createName").value.trim()};
+      if (branch) {body.zone_id=Number(get("createZoneId").value);body.location=get("createLocation").value.trim()||null;}
+      try {
+        await this.request(kind+"_create.php",{method:"POST",headers:{"Content-Type":"application/json","X-CSRF-Token":this.csrf},body:JSON.stringify(body)});
+        await this.refresh();
+        layer.remove();render();toast("Approved "+kind+" created and audit logged");
+      } catch(error) {get("createError").textContent=error.message;button.disabled=false;}
+    };
   },
   openBranchModal() {
     if (this.user.role!=="super_admin") {toast("Only super administrators can edit branch records.");return;}
