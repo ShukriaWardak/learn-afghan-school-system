@@ -27,3 +27,40 @@ Login failures are stored in `login_attempts` for basic throttling. Remove old l
 - Configure database credentials outside public web root in production; perform threat modeling and security tests.
 - Official zone names/codes, branch names/codes, department records and form fields must be approved.
 - GitHub Pages **cannot run PHP or MySQL**.
+
+## Phase 4 API and first-admin setup
+
+Read endpoints require a valid session:
+
+| Endpoint | Permission | Function |
+| --- | --- | --- |
+| `GET api/zones.php` | super / assigned zone / assigned branch | Scoped zones |
+| `GET api/branches.php` | super / assigned zone / assigned branch | Scoped branches; includes active branch-admin display name |
+| `GET api/users.php` | super admin only | First 200 account summaries, never password hashes |
+| `GET api/audit.php` | super admin only | Latest 100 audit event summaries |
+| `POST api/zone_create.php` | super admin only | Create zone; CSRF + validation + audit |
+| `POST api/branch_create.php` | super admin only | Create branch in pending state; CSRF + validation + audit |
+| `POST api/branch_update.php` | super admin only | Update name, zone, location and status; CSRF + validation + audit |
+
+All POST actions expect a same-origin JSON request with `X-CSRF-Token` from a
+valid session. Role enforcement is **server side**, not based on hidden frontend buttons.
+Writes use SQL transactions so audit history and actual changes succeed together.
+
+The first account must be approved and enrolled from the server command line, not through
+any public web route. Run `php backend/cli/first_admin.php` with local process environment
+variables `LEARN_FIRST_ADMIN_USERNAME`, `LEARN_FIRST_ADMIN_NAME` and
+`LEARN_FIRST_ADMIN_PASSWORD` (>=12 bytes). There is deliberately no default password.
+The helper refuses to run if a super admin already exists. Protect environment variables,
+clear them promptly, and never commit any real credentials.
+
+### Current limitations (not production ready)
+
+- No real-world names or codes preloaded. Confirm approved zone/branch lists before entering.
+- No organization-approved permission matrix for editing other departments or roles yet.
+- No user invitation, password-reset or MFA flow.
+- No backend CRUD for staff, finance, healthcare or student records.
+- No complete report generator, encrypted off-site backup strategy or disaster recovery drill.
+- Must perform end-to-end XAMPP tests, role boundary checks, authentication security review,
+  input validation tests and staging deployment with HTTPS before using confidential data.
+- Dedicated **public** production hosting must restrict access to `backend/config.local.php`,
+  SQL dumps and CLI files, keep secrets outside the public web root, and enforce trusted-host rules.
