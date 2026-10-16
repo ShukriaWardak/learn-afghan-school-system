@@ -14,7 +14,7 @@ let state=saved&&Array.isArray(saved.branches)?saved:structuredClone(defaults);
 let current="overview",filterText="",filterZone="all";
 const $=s=>document.querySelector(s);
 const escapeHtml=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
-const save=()=>{if(!Live.active)localStorage.setItem(KEY,JSON.stringify(state)};
+const save=()=>{if(!Live.active)localStorage.setItem(KEY,JSON.stringify(state));};
 const go=p=>{current=p;filterText="";filterZone="all";render();$("#sidebar").classList.remove("open");if(Live.active&&(p==="users"||p==="audit"))Live.loadPage(p)};
 const titleOf=id=>NAV.flatMap(x=>x[1]).find(x=>x[0]===id)?.[2]||id;
 function navigation(){ $("#nav").innerHTML=NAV.map(g=>'<div class="group-label">'+g[0]+'</div>'+g[1].map(x=>'<button class="nav-link '+(current===x[0]?"active":"")+'" data-page="'+x[0]+'"><span class="nav-symbol">'+x[1]+'</span>'+x[2]+'</button>').join("")).join("");document.querySelectorAll("[data-page]").forEach(b=>b.onclick=()=>go(b.dataset.page))}
