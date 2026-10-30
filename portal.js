@@ -400,6 +400,42 @@
     }
   });
 
+  get("export-branches-button").addEventListener("click", async () => {
+    const button = get("export-branches-button");
+    button.disabled = true;
+    message("branches-message", "Preparing authorized branch export...");
+    try {
+      const response = await fetch(apiBase + "branch_export.php", {
+        credentials: "same-origin",
+        headers: { Accept: "text/csv" }
+      });
+      if (!response.ok) {
+        const errorBody = await response.json().catch(() => null);
+        const messageText = errorBody && typeof errorBody.error === "string"
+          ? errorBody.error : "Export failed (" + response.status + ")";
+        throw new Error(messageText);
+      }
+      const contentType = response.headers.get("Content-Type") || "";
+      if (!contentType.toLowerCase().includes("text/csv")) {
+        throw new Error("Unexpected export response");
+      }
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = "learn-afghan-authorized-branches.csv";
+      document.body.append(link);
+      link.click();
+      link.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+      message("branches-message", "CSV contains all branches your account is authorized to view.");
+    } catch (error) {
+      message("branches-message", error.message, true);
+    } finally {
+      button.disabled = false;
+    }
+  });
+
   get("refresh-button").addEventListener("click", loadBranches);
   get("branch-search").addEventListener("input", renderBranches);
   get("zone-filter").addEventListener("change", renderBranches);
