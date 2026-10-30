@@ -27,3 +27,59 @@ Login failures are stored in `login_attempts` for basic throttling. Remove old l
 - Configure database credentials outside public web root in production; perform threat modeling and security tests.
 - Official zone names/codes, branch names/codes, department records and form fields must be approved.
 - GitHub Pages **cannot run PHP or MySQL**.
+
+## Phase 4 — connected sign-in and branch viewing (development-only)
+- The separate `/portal.html` is an authenticated PHP/MySQL integration preview with Super Admin-only zone and branch management. The original `/index.html` is still a browser demo and is **not an authenticated production dashboard**.
+- Download or clone the full repository into `C:\\xampp\\htdocs\\learn-afghan-school-system` (adjust the path if your XAMPP directory differs).
+- In XAMPP start Apache and MySQL. In phpMyAdmin import `database/schema.sql` and then `database/002_login_attempts.sql`. **Both scripts use `learn_afghan`**, not `learn_afghan_school_system`.
+- Use a dedicated **local development** MySQL account with only the privileges needed by these endpoints and setup (not MySQL root). One example for an *authorized local database administrator* to adapt in phpMyAdmin's SQL tab (choose your own strong password; do not publish it):
+
+```sql
+CREATE USER 'learn_app'@'127.0.0.1' IDENTIFIED BY 'CHOOSE_A_UNIQUE_LOCAL_PASSWORD';
+GRANT SELECT, INSERT, UPDATE ON learn_afghan.* TO 'learn_app'@'127.0.0.1';
+```
+
+- Copy `backend/config.example.php` to `backend/config.local.php`, with the local MySQL username, password and database `learn_afghan`. `config.local.php` is Git-ignored; **never commit it**. The `config.example.php` host is `127.0.0.1`, matching the example account above. If you instead choose `localhost`, configure the corresponding database host and grants consistently.
+- The first local super admin must be authorized by the team. The optional CLI-only script refuses HTTP requests and refuses to create a new account if *any* user exists:
+
+```powershell
+cd C:\xampp\htdocs\learn-afghan-school-system
+C:\xampp\php\php.exe backend\scripts\create_first_admin.php --development-only
+```
+
+  The password may be **visible while you type it** in the terminal: use a private terminal and a **unique test password** of at least 12 characters. Never use a personal or production password. This script is for local setup only; exclude it from production deployment.
+- Visit `http://localhost/learn-afghan-school-system/portal.html`. Sign in, inspect the role-scoped branch list, and—if an authorized development Super Admin—add only officially confirmed zones and branches using the management forms. If no official branch or zone records have been approved and inserted, the correct result is an **empty directory**—not 25 fictitious rows.
+- To verify authorization, sign out and confirm that `backend/api/branches.php` returns HTTP 401 when opened without a valid session. Also test on the intended PHP/XAMPP installation before considering rollout.
+
+## Phase 5 — initial zone and branch write APIs
+- GET `backend/api/zones.php` — authenticated Super Admin only; list database zones.
+- POST `backend/api/zones.php` — Super Admin only, JSON `{"code":"OFFICIAL_CODE","name":"Approved name"}`, CSRF header required. Inserts with an audit row in one transaction.
+- POST `backend/api/branch_save.php` — Super Admin only; JSON with `action` of `create` or `update`, `zone_id`, `code`, `name`, optional `location`, and `status` (`pending`, `active`, or `inactive`). Updates require a numeric `id`. Records are saved and audited transactionally; duplicates return HTTP 409.
+- GET `backend/api/branches.php` — still read-only for zone and branch admins, scoped by the role assigned in MySQL.
+- These APIs **do not allow deletion** and have **not** been tested against the team's XAMPP database. The dashboard at `/index.html` remains only a demo.
+- Run the test checklist in [Phase 5 tests](../docs/phase5-local-tests.md) before requesting review of this draft PR.
+
+**Limitations:** Development-only. No full privilege matrix, staff/teacher modules, approval workflow, PDF/XLSX reporting, recovery workflow or comprehensive security tests. Organization records have server-side authorization, validation and audited writes; exports and audit history need security review. Do not use this with sensitive or production information.
+
+## Phase 6 — Department manager and audit list
+- GET/POST `backend/api/departments.php` — Super Admin only. GET lists all approved departments. POST supports `{"action":"create","code":"APPROVED_CODE","name":"Approved name"}` and `{"action":"update","id":1,"code":"APPROVED_CODE","name":"Approved name"}` with a CSRF header. No delete or hierarchy editing.
+- GET `backend/api/audit.php` — Super Admin only; returns the 50 latest organizational change entries without full detail JSON.
+- [Phase 6 test checklist](../docs/phase6-local-tests.md).
+
+## Phase 7 — Branch CSV export
+- GET `backend/api/branch_export.php` — authenticated Super/Zone/Branch Admin; server enforces the same data scope as GET `branches.php` via shared `branch_directory.php` query helper.
+- The portal's **Export authorized CSV** button downloads all server-authorized branch records, not only the current browser-filtered rows.
+- UTF-8 BOM and basic spreadsheet formula sanitization are provided; validate against the team's Excel version.
+- [Phase 7 test checklist](../docs/phase7-csv-export-tests.md).
+
+**Outstanding:** Before deployment, test all role boundaries, CSRF, duplicates, reporting policy, security headers, session handling, account lifecycle, data retention, backup/recovery, and export auditing requirements. Never put real confidential data or credentials into this public repository.
+
+## Phase 8 — Teacher and Staff directories
+- **Migration required:** `database/003_personnel_directories.sql` (after initial two SQL files). Creates two *empty* tables; no staff, teacher or login records are seeded.
+- GET `backend/api/people.php?kind=teacher` / `?kind=staff`: Super Admin sees all records; Zone Admin sees assigned-zone branches; Branch Admin sees assigned branch only. Central staff with no branch are Super Admin-only. Department User access is denied.
+- POST same endpoint: Super Admin only; validated `create`/`update` with CSRF and prepared SQL, atomic audit entries; no deletion. Teachers require existing branch ID. Staff require existing department ID and may have a null branch for a central assignment.
+- Records are capped at 500 per kind in this prototype. Pagination and a multiple-branch teacher relationship may be needed once official requirements are approved.
+- **Personnel names are sensitive information.** Do not enter actual people in a demo until LEARN Afghan authorizes a privacy policy, purpose, access boundaries and retention plan. Avoid uploading personal info to this public GitHub repository.
+- [Phase 8 migration and testing guide](../docs/phase8-personnel-tests.md).
+
+Before production: add staff/teacher account provisioning and permission matrix only after administrative approval, secure hosting, login lifecycle and thorough security testing.

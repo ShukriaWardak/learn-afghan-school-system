@@ -1,0 +1,190 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#081b39">
+  <title>LEARN Afghan | Connected Portal</title>
+  <link rel="stylesheet" href="portal.css">
+  <script src="portal.js" defer></script>
+</head>
+<body>
+  <div class="shell">
+    <header class="top">
+      <div class="brand"><span class="brand-mark" aria-hidden="true">◫</span><div><strong>LEARN AFGHAN</strong><small>Central Database · Development Portal</small></div></div>
+      <a href="index.html" class="demo-link">View dashboard demo</a>
+    </header>
+    <main class="main">
+      <section id="login-view" class="login-card" aria-labelledby="login-title">
+        <span class="eyebrow">PHP + MySQL integration</span>
+        <h1 id="login-title">Sign in</h1>
+        <p class="hint">Use an account created by an authorized local administrator. This is a development environment—not a production system.</p>
+        <form id="login-form">
+          <label for="username">Username</label>
+          <input id="username" name="username" type="text" maxlength="100" autocomplete="username" required>
+          <label for="password">Password</label>
+          <input id="password" name="password" type="password" autocomplete="current-password" required>
+          <button id="login-button" type="submit">Sign in</button>
+        </form>
+        <p id="login-message" class="message" role="status" aria-live="polite"></p>
+        <p class="small-print">Start Apache and MySQL in XAMPP and import both SQL scripts. If no authorized account exists, use the local CLI setup described in the backend README.</p>
+      </section>
+
+      <section id="app-view" hidden aria-labelledby="portal-title">
+        <div class="portal-heading">
+          <div><span class="eyebrow">MySQL-connected branch directory</span><h1 id="portal-title">Branch directory</h1><p id="account-label" class="hint"></p></div>
+          <button id="logout-button" type="button" class="secondary">Sign out</button>
+        </div>
+        <div class="notice">Records below come from MySQL, not the demonstration dashboard. Super admins can create and edit approved organizational records in the management section. Do not use personal data during development.</div>
+        <div class="summary">
+          <div><span>Visible branches</span><strong id="branch-total">—</strong></div>
+          <div><span>Visible zones</span><strong id="zone-total">—</strong></div>
+        </div>
+        <div class="directory">
+          <div class="directory-header"><h2>Authorized branch records</h2>
+            <div class="table-actions"><button type="button" id="export-branches-button" class="secondary">Export authorized CSV</button><button type="button" id="refresh-button" class="secondary">Refresh</button></div></div>
+          <div class="filters">
+            <label for="branch-search">Search<input id="branch-search" type="search" placeholder="Search by code, name or location"></label>
+            <label for="zone-filter">Zone<select id="zone-filter"><option value="">All visible zones</option></select></label>
+          </div>
+          <p id="branches-message" class="message" role="status" aria-live="polite"></p>
+          <div class="table-wrap"><table><thead><tr><th scope="col">Code</th><th scope="col">Branch</th><th scope="col">Zone</th><th scope="col">Location</th><th scope="col">Status</th></tr></thead><tbody id="branch-rows"></tbody></table></div>
+        </div>
+        <section id="management-section" class="management" hidden aria-labelledby="management-title">
+          <h2 id="management-title">Manage zones & branches</h2>
+          <p class="hint">Super admin only. Enter officially confirmed codes and names—not invented or demo records. All changes are recorded in the audit table.</p>
+          <div class="management-grid">
+            <form id="zone-form" class="admin-form">
+              <h3>Add an approved zone</h3>
+              <label for="zone-code">Zone code</label>
+              <input id="zone-code" name="code" required maxlength="30" pattern="[A-Za-z0-9][A-Za-z0-9_-]{1,29}" placeholder="Official code">
+              <label for="zone-name">Official zone name</label>
+              <input id="zone-name" name="name" required maxlength="150" placeholder="Confirmed by administration">
+              <button id="zone-save-button" type="submit">Save zone</button>
+              <p id="zone-message" class="message" role="status" aria-live="polite"></p>
+            </form>
+            <form id="branch-form" class="admin-form">
+              <h3>Create or edit an approved branch</h3>
+              <label for="branch-record">Branch record</label>
+              <select id="branch-record"><option value="">Create a new branch</option></select>
+              <label for="branch-zone">Zone</label>
+              <select id="branch-zone" required><option value="">Select an approved zone</option></select>
+              <label for="branch-code">Branch code</label>
+              <input id="branch-code" required maxlength="30" pattern="[A-Za-z0-9][A-Za-z0-9_-]{1,29}" placeholder="Official code">
+              <label for="branch-name">Official branch name</label>
+              <input id="branch-name" required maxlength="180" placeholder="Confirmed by administration">
+              <label for="branch-location">Location (optional)</label>
+              <input id="branch-location" maxlength="250" placeholder="Approved location description">
+              <label for="branch-status">Status</label>
+              <select id="branch-status">
+                <option value="pending">Pending</option>
+                <option value="active">Active</option>
+                <option value="inactive">Inactive</option>
+              </select>
+              <button id="branch-save-button" type="submit">Save branch</button>
+              <p id="branch-save-message" class="message" role="status" aria-live="polite"></p>
+            </form>
+          </div>
+        </section>
+        <section id="department-section" class="management" hidden aria-labelledby="department-title">
+          <h2 id="department-title">Department Management</h2>
+          <p class="hint">Super Admin only. Add or edit departments after the official organizational list is approved. This version creates top-level departments and preserves existing parent assignments.</p>
+          <div class="department-grid">
+            <form id="department-form" class="admin-form">
+              <h3>Register a department</h3>
+              <label for="department-record">Choose a record</label>
+              <select id="department-record"><option value="">Create new department</option></select>
+              <label for="department-code">Department code</label>
+              <input id="department-code" required maxlength="45" pattern="[A-Za-z0-9][A-Za-z0-9_-]{1,44}" placeholder="Approved code">
+              <label for="department-name">Official name</label>
+              <input id="department-name" required maxlength="180" placeholder="Confirmed by administration">
+              <button type="submit" id="department-save-button">Create department</button>
+              <p id="department-save-message" class="message" role="status" aria-live="polite"></p>
+            </form>
+            <div class="directory">
+              <div class="directory-header"><h3>Registered departments</h3><button type="button" class="secondary" id="departments-refresh-button">Refresh</button></div>
+              <p id="departments-message" class="message" role="status" aria-live="polite"></p>
+              <div class="table-wrap">
+                <table>
+                  <thead><tr><th scope="col">Code</th><th scope="col">Name</th><th scope="col">Parent ID</th></tr></thead>
+                  <tbody id="departments-rows"></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </section>
+        <section id="people-section" class="management" hidden aria-labelledby="people-title">
+          <h2 id="people-title">Teacher &amp; Staff Directories</h2>
+          <p class="hint">Authenticated, permission-scoped records from MySQL. Use development-only test records until personnel-data authorization and privacy review are complete.</p>
+          <div class="people-panels">
+            <section class="directory" aria-labelledby="teachers-title">
+              <div class="directory-header"><h3 id="teachers-title">Teachers</h3><button id="teachers-refresh" type="button" class="secondary">Refresh</button></div>
+              <p id="teachers-message" class="message" role="status" aria-live="polite"></p>
+              <div class="table-wrap">
+                <table><thead><tr><th scope="col">Code</th><th scope="col">Display name</th><th scope="col">Branch</th><th scope="col">Status</th></tr></thead>
+                <tbody id="teachers-rows"></tbody></table>
+              </div>
+            </section>
+            <section class="directory" aria-labelledby="staff-title">
+              <div class="directory-header"><h3 id="staff-title">Staff</h3><button id="staff-refresh" type="button" class="secondary">Refresh</button></div>
+              <p id="staff-message" class="message" role="status" aria-live="polite"></p>
+              <div class="table-wrap">
+                <table><thead><tr><th scope="col">Code</th><th scope="col">Display name</th><th scope="col">Department</th><th scope="col">Branch</th><th scope="col">Status</th></tr></thead>
+                <tbody id="staff-rows"></tbody></table>
+              </div>
+            </section>
+          </div>
+          <div id="people-admin-forms" class="management-grid" hidden>
+            <form id="teacher-form" class="admin-form">
+              <h3>Create or edit teacher record</h3>
+              <label for="teacher-record">Record</label>
+              <select id="teacher-record"><option value="">Create new teacher</option></select>
+              <label for="teacher-code">Official code</label>
+              <input id="teacher-code" required maxlength="30" pattern="[A-Za-z0-9][A-Za-z0-9_-]{1,29}">
+              <label for="teacher-name">Display name</label>
+              <input id="teacher-name" required maxlength="180">
+              <label for="teacher-branch">Assigned branch</label>
+              <select id="teacher-branch" required><option value="">Select branch</option></select>
+              <label for="teacher-status">Status</label>
+              <select id="teacher-status"><option value="pending">Pending</option><option value="active">Active</option><option value="inactive">Inactive</option></select>
+              <button type="submit" id="teacher-save">Create teacher</button>
+              <p id="teacher-save-message" class="message" role="status" aria-live="polite"></p>
+            </form>
+            <form id="staff-form" class="admin-form">
+              <h3>Create or edit staff record</h3>
+              <label for="staff-record">Record</label>
+              <select id="staff-record"><option value="">Create new staff member</option></select>
+              <label for="staff-code">Official code</label>
+              <input id="staff-code" required maxlength="30" pattern="[A-Za-z0-9][A-Za-z0-9_-]{1,29}">
+              <label for="staff-name">Display name</label>
+              <input id="staff-name" required maxlength="180">
+              <label for="staff-department">Assigned department</label>
+              <select id="staff-department" required><option value="">Select department</option></select>
+              <label for="staff-branch">Branch (optional for central staff)</label>
+              <select id="staff-branch"><option value="">Central / no branch</option></select>
+              <label for="staff-status">Status</label>
+              <select id="staff-status"><option value="pending">Pending</option><option value="active">Active</option><option value="inactive">Inactive</option></select>
+              <button type="submit" id="staff-save">Create staff member</button>
+              <p id="staff-save-message" class="message" role="status" aria-live="polite"></p>
+            </form>
+          </div>
+        </section>
+        <section id="audit-section" class="management" hidden aria-labelledby="audit-title">
+          <div class="directory-header">
+            <div><h2 id="audit-title">Audit History</h2><p class="hint audit-caption">Latest 50 zone, branch, department, teacher and staff changes. Detailed information and personal names are not shown in the audit list.</p></div>
+            <button type="button" id="audit-refresh-button" class="secondary">Refresh history</button>
+          </div>
+          <p id="audit-message" class="message" role="status" aria-live="polite"></p>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th scope="col">When (server time)</th><th scope="col">Actor</th><th scope="col">Action</th><th scope="col">Record type</th><th scope="col">Record ID</th></tr></thead>
+              <tbody id="audit-rows"></tbody>
+            </table>
+          </div>
+        </section>
+      </section>
+    </main>
+    <footer>Development preview only · Do not enter sensitive records before security testing and approval.</footer>
+  </div>
+</body>
+</html>

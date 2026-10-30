@@ -45,3 +45,22 @@ The repository now includes `database/schema.sql` and a separate `backend/` with
 
 ## Phase 3: authentication foundation
 The backend now includes `backend/api/login.php`, `logout.php`, `csrf.php`, `session.php`, and authorization checks for the branch list. Apply `database/002_login_attempts.sql` after the main schema. These endpoints have **not yet been tested in a running XAMPP installation**, and the frontend is **not connected**. No real accounts are pre-created. See [backend setup](backend/README.md). Do not deploy or enter real personal data until security work and testing are completed.
+
+## Phase 4: connected portal preview (development only)
+A separate [portal.html](portal.html) now provides a session-backed sign-in interface, a **permission-scoped** MySQL branch directory, and Super Admin-only zone/branch management using the PHP APIs in `backend/api/`. The existing `index.html` remains unchanged as the visual demo; the portal intentionally does not display the demo's placeholder branch data.
+
+To run locally, see [backend setup](backend/README.md). Start XAMPP Apache/MySQL, import both SQL scripts, configure local database credentials, and use a **locally authorized, development-only account**. Navigate to `http://localhost/learn-afghan-school-system/portal.html` if the repository lives under `htdocs/learn-afghan-school-system` (otherwise adjust the folder name). The new portal has not been tested in the team's XAMPP instance; do not deploy it or enter confidential data. Authorized Super Admin writes are validated on the PHP server and recorded in the database audit table. Only create records with officially confirmed codes and names.
+
+## Phase 6–7: Department records, audit viewer, and CSV export
+The development portal also includes:
+- A **Super Admin-only department manager** to create top-level departments or update existing department code/name without modifying existing parent relationships.
+- A **read-only audit history view** of the latest 50 zone, branch and department changes; detailed audit payloads are intentionally not shown.
+- **Role-scoped CSV export** of authorized branch records. Exports use the same server-side scope as the branch list. Cells with formula-like prefixes are protected for spreadsheet viewing.
+- Test checklists: [Phase 5](docs/phase5-local-tests.md), [Phase 6](docs/phase6-local-tests.md) and [Phase 7](docs/phase7-csv-export-tests.md).
+
+The connected portal still requires **live XAMPP testing and security review**. The original dashboard at `index.html` remains unchanged.
+
+## Phase 8: Teacher and staff directories
+A new optional migration, [003_personnel_directories.sql](database/003_personnel_directories.sql), creates empty `teacher_records` and `staff_records` tables in the **existing `learn_afghan` database**. The connected `portal.html` displays permission-scoped teacher/staff directories. Super Admin can create and edit code, display name, branch, department (staff), and status. Writes are checked server-side and audited without copying personal names to audit details.
+
+**Important:** The migration must be imported separately, even if the earlier schema files are already installed. See the [Phase 8 setup and test checklist](docs/phase8-personnel-tests.md). This is a prototype, not yet end-to-end tested or approved for actual personnel data. The preliminary single-branch teacher assignment may need revision after requirements review.
