@@ -73,3 +73,13 @@ C:\xampp\php\php.exe backend\scripts\create_first_admin.php --development-only
 - [Phase 7 test checklist](../docs/phase7-csv-export-tests.md).
 
 **Outstanding:** Before deployment, test all role boundaries, CSRF, duplicates, reporting policy, security headers, session handling, account lifecycle, data retention, backup/recovery, and export auditing requirements. Never put real confidential data or credentials into this public repository.
+
+## Phase 8 — Teacher and Staff directories
+- **Migration required:** `database/003_personnel_directories.sql` (after initial two SQL files). Creates two *empty* tables; no staff, teacher or login records are seeded.
+- GET `backend/api/people.php?kind=teacher` / `?kind=staff`: Super Admin sees all records; Zone Admin sees assigned-zone branches; Branch Admin sees assigned branch only. Central staff with no branch are Super Admin-only. Department User access is denied.
+- POST same endpoint: Super Admin only; validated `create`/`update` with CSRF and prepared SQL, atomic audit entries; no deletion. Teachers require existing branch ID. Staff require existing department ID and may have a null branch for a central assignment.
+- Records are capped at 500 per kind in this prototype. Pagination and a multiple-branch teacher relationship may be needed once official requirements are approved.
+- **Personnel names are sensitive information.** Do not enter actual people in a demo until LEARN Afghan authorizes a privacy policy, purpose, access boundaries and retention plan. Avoid uploading personal info to this public GitHub repository.
+- [Phase 8 migration and testing guide](../docs/phase8-personnel-tests.md).
+
+Before production: add staff/teacher account provisioning and permission matrix only after administrative approval, secure hosting, login lifecycle and thorough security testing.
