@@ -1,92 +1,60 @@
-# LEARN Afghan — Central Database (Super Admin UI)
+# LEARN Afghan — Central Administration
 
-This repository contains an **early, browser-only interface prototype** for LEARN Afghan's proposed centralized administrative database.
+This development branch (`feature/live-admin-integration`, draft PR #1) connects the administrative dashboard to PHP/MySQL. It is not merged into `main` and has not passed end-to-end XAMPP testing.
 
-## Local preview (VS Code / XAMPP)
-1. Open this repository's folder in VS Code.
-2. Open `index.html` in a browser, or use VS Code's Live Server extension.
-3. Alternatively, if hosted inside XAMPP's `htdocs`, start Apache and open the appropriate localhost URL.
+## Current progress
 
-## What works in the demo
-- Responsive dashboard with navigable sidebar
-- Navigation for zones, 25 branch records, administrators, teachers, staff, departments, reporting and audit planning
-- Search/filter branch records
-- Local demonstration edits to branch names, zone assignment, assigned admin and status
-- CSV export of the demo branch registry
+| Area | Code available on this branch | Verification / remaining work |
+| --- | --- | --- |
+| Interface | Dashboard, navigation, search and zone filters | Browser interaction testing pending |
+| Database foundation | zones, branches, departments, users, audit_events, login_attempts | Verify both SQL imports in local MySQL |
+| Authentication | Sign-in, sign-out, sessions, CSRF and login throttling | Local login and role-boundary tests pending |
+| Zone / branch administration | Scoped listings; super-admin zone/branch creation and branch editing | Verify database persistence and audit rows |
+| Users | Super-admin read-only directory, first 200 accounts | Invitations, editing, reset and MFA are not implemented |
+| Audit | Transactional logs for zone/branch writes; recent 100 events | Verify against a running database |
+| CSV | Authorized branch export; branch-page search/zone filters; formula neutralization | Export helper checks passed; browser download testing pending |
+| Other modules | Planning screens | Staff, teachers, students, finance, health and approvals are not implemented |
+| Operations | Setup instructions and syntax-check workflow | PDF/Excel reporting, backups/recovery and production readiness remain |
 
-**Demo storage:** Edits are saved in the **current browser's localStorage only**. The branch names, zone assignments, statuses and metrics are placeholder values, **not authoritative LEARN Afghan records**.
+The proposal targets **3 zones and 25 branches**. These are planned scope, not verified live counts. No official zone/branch records or default accounts are seeded. The dashboard's live counts reflect only records accessible to the signed-in account.
 
-## Not yet implemented
-- Secure authentication, live role-based permissions and authorization
-- Backend / shared database (PHP/MySQL or other stack still to be confirmed)
-- Server-side validated forms, duplicate controls and approval workflow
-- Audit history written on the server
-- Real Excel/PDF report generation
-- Scheduled server backups and tested recovery
-- Formal user data, official branch names/codes, 3 zone definitions and department-specific required fields
+## View the current result locally
 
-**Do not enter real personal, student, HR, health or financial data into this demo.** Never add database passwords, API keys or private data to a public GitHub repository.
-
-## VS Code + GitHub sync
-After changes are committed to the remote main branch, update your local clone:
+Use the existing project folder in XAMPP's `htdocs`. In that folder, first run:
 
 ```bash
 git status
-git pull origin main
 ```
 
-If `git status` shows local modifications, save/commit or otherwise handle them before pulling.
+If there are local edits, commit or otherwise preserve them before switching branches. Then run:
 
-## Scope
-Based on the *LEARN Afghan Central Database Development Proposal*: a secure centralized system for three zones, 25 branches, departments, forms, access controls, approved reporting and backups. Phase 1 prioritizes administrative data entry rather than advanced school-management features.
+```bash
+git fetch origin
+git switch feature/live-admin-integration
+git pull --ff-only origin feature/live-admin-integration
+```
 
-## Phase 2: PHP/MySQL groundwork
-The repository now includes `database/schema.sql` and a separate `backend/` with configuration template and read-only session-protected branch API. This is scaffolding only: authentication, real user accounts, real data, approvals, server auditing, and secure deployment are **not yet implemented**. See [backend/README.md](backend/README.md). Do not enter confidential data into the browser demo.
+1. Start Apache and MySQL in XAMPP (PHP 8.1+).
+2. For a fresh database, import `database/schema.sql`, then `database/002_login_attempts.sql`. If already imported, check that the six tables above exist before repeating setup.
+3. Copy `backend/config.example.php` to `backend/config.local.php` and configure a restricted local database account. Never commit this file.
+4. Use an authorized local test account. For an empty installation, follow the CLI first-admin instructions in [backend/README.md](backend/README.md).
+5. If the folder is named `learn-afghan-school-system`, open **http://localhost/learn-afghan-school-system/index.html**. Adjust the folder name if necessary.
+6. Sign in. With an empty database, zero zones/branches is expected. Add a test zone, add a test branch, edit it, reload, and verify audit history using disposable local data.
 
-## Phase 3: authentication foundation
-The backend now includes `backend/api/login.php`, `logout.php`, `csrf.php`, `session.php`, and authorization checks for the branch list. Apply `database/002_login_attempts.sql` after the main schema. These endpoints have **not yet been tested in a running XAMPP installation**, and the frontend is **not connected**. No real accounts are pre-created. See [backend setup](backend/README.md). Do not deploy or enter real personal data until security work and testing are completed.
+Opening `index.html` directly via `file://` shows a separately labelled browser-only demo. Demo edits use localStorage and do not populate MySQL. GitHub displays source code; it is not a running PHP/MySQL service.
 
-## Phase 4: authenticated administrative workflow (feature branch)
+## Local verification checklist
 
-This branch introduces a real, **opt-in local-server path** while retaining the clearly marked
-browser-only prototype for `file://` and hosts with no PHP backend:
+- Successful login, incorrect-password response, sign-out and subsequent blocked API access.
+- Super admin creates a zone and branch, edits branch status, and sees changes after reload.
+- Each successful write has a corresponding audit event.
+- Duplicate codes and invalid fields are rejected.
+- Zone/branch accounts cannot read outside their assigned scope or call super-admin write APIs.
+- Search and zone filters match CSV rows; no-match exports contain the header only.
+- User and audit pages remain restricted to super admins.
 
-- Authenticated sign-in, sign-out, session restoration and client-side loading protection.
-- Zone and branch listings fetched from PHP/MySQL and scoped on the **server** by role.
-- Super-admin-only creation of approved zones/branches and editing existing branch records.
-- CSRF protection, field validation and server audit rows for these writes.
-- Read-only user directory (first 200 users) and audit log (last 100 events), visible only to super admins.
-- Scoped CSV export of the authorized branch list.
-- Syntax-check workflow and CLI-only first-admin enrollment helper.
+JavaScript syntax and isolated CSV behavior were checked on 30 October 2026. PHP/MySQL integration and browser tests have **not** been completed in this session. Do not confuse code availability with a tested deployment.
 
-**Important:** Live mode is not a completed production system. It is enabled only if a compatible
-PHP backend responds. A missing or unconfigured backend is *not* silently treated as a live database.
-Official zone/branch records are never seeded from the placeholder demo. There is no default account.
-Staff/HR, student, healthcare, finance, approvals, report generation, user lifecycle, backups and
-recovery remain unimplemented. Do not upload real confidential information until security review,
-testing and organizational sign-off.
+## Project scope and remaining inputs
 
-### Quick local setup
-
-1. Use PHP 8.1+ with XAMPP (or a comparable Apache + MySQL/MariaDB stack).
-2. Import `database/schema.sql` and then `database/002_login_attempts.sql`.
-3. Create a restricted MySQL application user with only required privileges.
-4. Copy `backend/config.example.php` to `backend/config.local.php`, fill in local-only credentials,
-   and keep that local file out of Git.
-5. An **authorized owner** must create the first super-admin account. The CLI-only
-   `backend/cli/first_admin.php` script accepts `LEARN_FIRST_ADMIN_USERNAME`,
-   `LEARN_FIRST_ADMIN_NAME` and `LEARN_FIRST_ADMIN_PASSWORD` from the local process environment;
-   the password must be at least 12 bytes long. Clear those variables after running
-   `php backend/cli/first_admin.php`. Do not type secrets into repository files or commit them.
-6. Start Apache and MySQL, then open the project through `http://localhost/<folder>/index.html`.
-   Logging in will display only actual database records (possibly zero if not yet entered).
-
-Super admin can first add approved zones, then branches, through the authenticated dashboard.
-See [backend setup and API details](backend/README.md).
-
-### Verification status
-
-JavaScript syntax was checked while developing this branch. A GitHub Actions workflow is provided
-for JS/PHP syntax linting. **Full login, database migrations, role-scope checks, audit writes and
-browser interactions must be exercised against a running local MySQL/PHP instance** before merge
-or use with operational data.
+The agreed direction is a centralized administrative database for three zones and 25 branches. Official names/codes, department fields, permission rules and reporting formats still need organizational confirmation. Production hosting, security review, backups and recovery remain unfinished. Use disposable test data until those requirements are met.
