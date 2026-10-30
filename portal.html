@@ -85,6 +85,46 @@
             </form>
           </div>
         </section>
+        <section id="department-section" class="management" hidden aria-labelledby="department-title">
+          <h2 id="department-title">Department Management</h2>
+          <p class="hint">Super Admin only. Add or edit departments after the official organizational list is approved. This version creates top-level departments and preserves existing parent assignments.</p>
+          <div class="department-grid">
+            <form id="department-form" class="admin-form">
+              <h3>Register a department</h3>
+              <label for="department-record">Choose a record</label>
+              <select id="department-record"><option value="">Create new department</option></select>
+              <label for="department-code">Department code</label>
+              <input id="department-code" required maxlength="45" pattern="[A-Za-z0-9][A-Za-z0-9_-]{1,44}" placeholder="Approved code">
+              <label for="department-name">Official name</label>
+              <input id="department-name" required maxlength="180" placeholder="Confirmed by administration">
+              <button type="submit" id="department-save-button">Create department</button>
+              <p id="department-save-message" class="message" role="status" aria-live="polite"></p>
+            </form>
+            <div class="directory">
+              <div class="directory-header"><h3>Registered departments</h3><button type="button" class="secondary" id="departments-refresh-button">Refresh</button></div>
+              <p id="departments-message" class="message" role="status" aria-live="polite"></p>
+              <div class="table-wrap">
+                <table>
+                  <thead><tr><th scope="col">Code</th><th scope="col">Name</th><th scope="col">Parent ID</th></tr></thead>
+                  <tbody id="departments-rows"></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </section>
+        <section id="audit-section" class="management" hidden aria-labelledby="audit-title">
+          <div class="directory-header">
+            <div><h2 id="audit-title">Audit History</h2><p class="hint audit-caption">Latest 50 zone, branch and department changes. Detail payloads are not shown.</p></div>
+            <button type="button" id="audit-refresh-button" class="secondary">Refresh history</button>
+          </div>
+          <p id="audit-message" class="message" role="status" aria-live="polite"></p>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th scope="col">When (server time)</th><th scope="col">Actor</th><th scope="col">Action</th><th scope="col">Record type</th><th scope="col">Record ID</th></tr></thead>
+              <tbody id="audit-rows"></tbody>
+            </table>
+          </div>
+        </section>
       </section>
     </main>
     <footer>Development preview only · Do not enter sensitive records before security testing and approval.</footer>
