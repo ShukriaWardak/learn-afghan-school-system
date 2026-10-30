@@ -59,5 +59,17 @@ C:\xampp\php\php.exe backend\scripts\create_first_admin.php --development-only
 - These APIs **do not allow deletion** and have **not** been tested against the team's XAMPP database. The dashboard at `/index.html` remains only a demo.
 - Run the test checklist in [Phase 5 tests](../docs/phase5-local-tests.md) before requesting review of this draft PR.
 
-**Limitations:** Development-only. No full privilege matrix, staff/teacher modules, approval workflow, report export, audit review UI, recovery workflow, or comprehensive security tests. Only the zone and branch forms currently have server-side authorization, validation and audit inserts. Do not use this with sensitive or production information.
+**Limitations:** Development-only. No full privilege matrix, staff/teacher modules, approval workflow, PDF/XLSX reporting, recovery workflow or comprehensive security tests. Organization records have server-side authorization, validation and audited writes; exports and audit history need security review. Do not use this with sensitive or production information.
 
+## Phase 6 — Department manager and audit list
+- GET/POST `backend/api/departments.php` — Super Admin only. GET lists all approved departments. POST supports `{"action":"create","code":"APPROVED_CODE","name":"Approved name"}` and `{"action":"update","id":1,"code":"APPROVED_CODE","name":"Approved name"}` with a CSRF header. No delete or hierarchy editing.
+- GET `backend/api/audit.php` — Super Admin only; returns the 50 latest organizational change entries without full detail JSON.
+- [Phase 6 test checklist](../docs/phase6-local-tests.md).
+
+## Phase 7 — Branch CSV export
+- GET `backend/api/branch_export.php` — authenticated Super/Zone/Branch Admin; server enforces the same data scope as GET `branches.php` via shared `branch_directory.php` query helper.
+- The portal's **Export authorized CSV** button downloads all server-authorized branch records, not only the current browser-filtered rows.
+- UTF-8 BOM and basic spreadsheet formula sanitization are provided; validate against the team's Excel version.
+- [Phase 7 test checklist](../docs/phase7-csv-export-tests.md).
+
+**Outstanding:** Before deployment, test all role boundaries, CSRF, duplicates, reporting policy, security headers, session handling, account lifecycle, data retention, backup/recovery, and export auditing requirements. Never put real confidential data or credentials into this public repository.
