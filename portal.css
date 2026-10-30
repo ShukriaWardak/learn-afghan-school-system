@@ -52,3 +52,7 @@ footer{text-align:center;font-size:12px;color:#8caacc;padding:23px}
 .audit-caption{margin:7px 0 0}
 #audit-section{overflow:hidden}
 @media(max-width:830px){.department-grid{grid-template-columns:1fr}}
+
+/* Accessible branch directory actions */
+.table-actions{display:flex;align-items:center;gap:9px;flex-wrap:wrap}
+@media(max-width:600px){.table-actions{width:100%}.table-actions button{flex:1}}
