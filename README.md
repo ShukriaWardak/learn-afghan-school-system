@@ -59,3 +59,8 @@ The development portal also includes:
 - Test checklists: [Phase 5](docs/phase5-local-tests.md), [Phase 6](docs/phase6-local-tests.md) and [Phase 7](docs/phase7-csv-export-tests.md).
 
 The connected portal still requires **live XAMPP testing and security review**. The original dashboard at `index.html` remains unchanged.
+
+## Phase 8: Teacher and staff directories
+A new optional migration, [003_personnel_directories.sql](database/003_personnel_directories.sql), creates empty `teacher_records` and `staff_records` tables in the **existing `learn_afghan` database**. The connected `portal.html` displays permission-scoped teacher/staff directories. Super Admin can create and edit code, display name, branch, department (staff), and status. Writes are checked server-side and audited without copying personal names to audit details.
+
+**Important:** The migration must be imported separately, even if the earlier schema files are already installed. See the [Phase 8 setup and test checklist](docs/phase8-personnel-tests.md). This is a prototype, not yet end-to-end tested or approved for actual personnel data. The preliminary single-branch teacher assignment may need revision after requirements review.
