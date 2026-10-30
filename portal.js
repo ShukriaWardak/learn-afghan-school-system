@@ -72,7 +72,8 @@ function renderBranches() {
     cell(row, branch.name);
     cell(row, branch.zone_name);
     cell(row, branch.location);
-    const td = cell(row, '');
+    const td = document.createElement('td');
+    row.append(td);
     const tag = document.createElement('span');
     tag.className = 'status';
     if (['active', 'inactive', 'pending'].includes(branch.status)) tag.classList.add(branch.status);
