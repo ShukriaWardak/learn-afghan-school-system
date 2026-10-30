@@ -44,3 +44,11 @@ footer{text-align:center;font-size:12px;color:#8caacc;padding:23px}
 .admin-form h3{font-size:16px;margin:0 0 5px}.admin-form label{font-size:12px;color:#c4ddf2;margin:2px 0 0}
 .admin-form .message{margin:3px 0 0}
 @media(max-width:750px){.management{padding:13px}.management-grid{grid-template-columns:1fr}.admin-form{padding:15px}}
+
+/* Departments and audit history */
+.department-grid{display:grid;grid-template-columns:minmax(240px,0.9fr) minmax(340px,1.4fr);gap:18px;align-items:start;margin-top:16px}
+.department-grid .directory{background:#102f54}
+.directory h3{margin:0;font-size:16px}
+.audit-caption{margin:7px 0 0}
+#audit-section{overflow:hidden}
+@media(max-width:830px){.department-grid{grid-template-columns:1fr}}
