@@ -13,7 +13,7 @@ $sql = "SELECT a.id, a.action, a.entity_type, a.entity_id, a.created_at,
                     ELSE u.display_name END AS actor_name
         FROM audit_events a
         LEFT JOIN users u ON u.id = a.actor_user_id
-        WHERE a.entity_type IN ('zone', 'branch', 'department')
+        WHERE a.entity_type IN ('zone', 'branch', 'department', 'teacher', 'staff')
         ORDER BY a.id DESC
         LIMIT 50";
 $events = $pdo->query($sql)->fetchAll();
