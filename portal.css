@@ -56,3 +56,10 @@ footer{text-align:center;font-size:12px;color:#8caacc;padding:23px}
 /* Accessible branch directory actions */
 .table-actions{display:flex;align-items:center;gap:9px;flex-wrap:wrap}
 @media(max-width:600px){.table-actions{width:100%}.table-actions button{flex:1}}
+
+/* Phase 8 people directories: compact responsive tables and separate admin forms. */
+.people-panels{display:grid;grid-template-columns:1fr 1fr;gap:15px;margin:20px 0}
+.people-panels .directory{min-width:0;padding:15px}
+.people-panels .directory h3{font-size:16px}
+#people-admin-forms{margin-top:17px}
+@media(max-width:980px){.people-panels{grid-template-columns:1fr}}
