@@ -1,47 +1,74 @@
-# LEARN Afghan — Central Database (Super Admin UI)
+# LEARN Afghan — Central Administration
 
-This repository contains an **early, browser-only interface prototype** for LEARN Afghan's proposed centralized administrative database.
+This development branch (`feature/live-admin-integration`, draft PR #1) connects the administrative dashboard to PHP/MySQL. It is not merged into `main` and has not passed end-to-end XAMPP testing.
 
-## Local preview (VS Code / XAMPP)
-1. Open this repository's folder in VS Code.
-2. Open `index.html` in a browser, or use VS Code's Live Server extension.
-3. Alternatively, if hosted inside XAMPP's `htdocs`, start Apache and open the appropriate localhost URL.
+## Current progress
 
-## What works in the demo
-- Responsive dashboard with navigable sidebar
-- Navigation for zones, 25 branch records, administrators, teachers, staff, departments, reporting and audit planning
-- Search/filter branch records
-- Local demonstration edits to branch names, zone assignment, assigned admin and status
-- CSV export of the demo branch registry
+| Area | Code available on this branch | Verification / remaining work |
+| --- | --- | --- |
+| Interface | Dashboard, navigation, search and zone filters | Browser interaction testing pending |
+| Database foundation | zones, branches, departments, users, audit_events, login_attempts | Verify both SQL imports in local MySQL |
+| Authentication | Sign-in, sign-out, sessions, CSRF and login throttling | Local login and role-boundary tests pending |
+| Zone / branch administration | Scoped listings; super-admin zone/branch creation and branch editing | Verify database persistence and audit rows |
+| Users | Super-admin read-only directory, first 200 accounts | Invitations, editing, reset and MFA are not implemented |
+| Audit | Transactional logs for zone/branch writes; recent 100 events | Verify against a running database |
+| CSV | Authorized branch export; branch-page search/zone filters; formula neutralization | Export helper checks passed; browser download testing pending |
+| Reports | Signed-in branch status totals, zone breakdown and authorized CSV download | Isolated report checks passed; browser/MySQL integration pending |
+| Departments | Super-admin directory, create and rename; transactional audit events | Uses existing departments table; parent assignments preserved |
+| Teachers / Staff | Scoped directories, search/status filters, super-admin create/edit/inactivate, stale-edit protection | Requires migration 003; personnel records do not create login accounts |
+| Branch admins | Super-admin read-only directory of branch-admin accounts | Account provisioning/editing still pending |
+| Other modules | Planning screens | Students, finance, health and approvals are not implemented |
+| Operations | Setup instructions and syntax-check workflow | PDF/Excel reporting, backups/recovery and production readiness remain |
 
-**Demo storage:** Edits are saved in the **current browser's localStorage only**. The branch names, zone assignments, statuses and metrics are placeholder values, **not authoritative LEARN Afghan records**.
+The proposal targets **3 zones and 25 branches**. These are planned scope, not verified live counts. No official zone/branch records or default accounts are seeded. The dashboard's live counts reflect only records accessible to the signed-in account.
 
-## Not yet implemented
-- Secure authentication, live role-based permissions and authorization
-- Backend / shared database (PHP/MySQL or other stack still to be confirmed)
-- Server-side validated forms, duplicate controls and approval workflow
-- Audit history written on the server
-- Real Excel/PDF report generation
-- Scheduled server backups and tested recovery
-- Formal user data, official branch names/codes, 3 zone definitions and department-specific required fields
+## View the current result locally
 
-**Do not enter real personal, student, HR, health or financial data into this demo.** Never add database passwords, API keys or private data to a public GitHub repository.
-
-## VS Code + GitHub sync
-After changes are committed to the remote main branch, update your local clone:
+Use the existing project folder in XAMPP's `htdocs`. In that folder, first run:
 
 ```bash
 git status
-git pull origin main
 ```
 
-If `git status` shows local modifications, save/commit or otherwise handle them before pulling.
+If there are local edits, commit or otherwise preserve them before switching branches. Then run:
 
-## Scope
-Based on the *LEARN Afghan Central Database Development Proposal*: a secure centralized system for three zones, 25 branches, departments, forms, access controls, approved reporting and backups. Phase 1 prioritizes administrative data entry rather than advanced school-management features.
+```bash
+git fetch origin
+git switch feature/live-admin-integration
+git pull --ff-only origin feature/live-admin-integration
+```
 
-## Phase 2: PHP/MySQL groundwork
-The repository now includes `database/schema.sql` and a separate `backend/` with configuration template and read-only session-protected branch API. This is scaffolding only: authentication, real user accounts, real data, approvals, server auditing, and secure deployment are **not yet implemented**. See [backend/README.md](backend/README.md). Do not enter confidential data into the browser demo.
+1. Start Apache and MySQL in XAMPP (PHP 8.1+).
+2. For a fresh database, import `database/schema.sql`, then `database/002_login_attempts.sql`. If already imported, check that the six tables above exist before repeating setup.
+3. Copy `backend/config.example.php` to `backend/config.local.php` and configure a restricted local database account. Never commit this file.
+4. Use an authorized local test account. For an empty installation, follow the CLI first-admin instructions in [backend/README.md](backend/README.md).
+5. If the folder is named `learn-afghan-school-system`, open **http://localhost/learn-afghan-school-system/index.html**. Adjust the folder name if necessary.
+6. Sign in. With an empty database, zero zones/branches is expected. Add a test zone, add a test branch, edit it, reload, and verify audit history using disposable local data.
 
-## Phase 3: authentication foundation
-The backend now includes `backend/api/login.php`, `logout.php`, `csrf.php`, `session.php`, and authorization checks for the branch list. Apply `database/002_login_attempts.sql` after the main schema. These endpoints have **not yet been tested in a running XAMPP installation**, and the frontend is **not connected**. No real accounts are pre-created. See [backend setup](backend/README.md). Do not deploy or enter real personal data until security work and testing are completed.
+### Departments, teachers and staff
+
+Import `database/003_personnel.sql` after the first two SQL files. This migration adds the personnel table without replacing existing tables or records. It is also required for existing installations upgrading to these modules.
+
+As a super administrator, open **Departments**, add an approved code/name, then open **Teachers** or **Staff & HR**. Add a record with a unique code, full name, branch, department, job title and status. Codes and record type remain fixed after creation. Edit a record to change its assignment or mark it inactive; no deletion is implemented. Existing department parent assignments are displayed and preserved; editing the hierarchy is not implemented.
+
+Zone and branch administrators can read personnel only within their assigned zone or branch. Department users have no personnel access yet. Only super administrators can write records or view the central department and branch-admin directories. Staff records are separate from login accounts, and this first registry does not include payroll, attendance, contact details or identity documents. The personnel and branch-admin directories display at most 1,000 records; filters search those loaded records.
+
+Run `node tests/registry.cjs` for isolated directory checks. The GitHub Actions integration job creates a disposable MySQL database and checks creation, editing, duplicate/invalid input, stale edits, CSRF, role boundaries, audit events and logout through the PHP APIs. `tests/setup-integration.php` refuses an existing database and is for disposable CI only. Check the workflow result for the exact commit before treating integration tests as passed.
+
+Opening `index.html` directly via `file://` shows a separately labelled browser-only demo. Demo edits use localStorage and do not populate MySQL. GitHub displays source code; it is not a running PHP/MySQL service.
+
+## Local verification checklist
+
+- Successful login, incorrect-password response, sign-out and subsequent blocked API access.
+- Super admin creates a zone and branch, edits branch status, and sees changes after reload.
+- Each successful write has a corresponding audit event.
+- Duplicate codes and invalid fields are rejected.
+- Zone/branch accounts cannot read outside their assigned scope or call super-admin write APIs.
+- Search and zone filters match CSV rows; no-match exports contain the header only.
+- User and audit pages remain restricted to super admins.
+
+JavaScript syntax and isolated CSV behavior were checked on 30 October 2026. PHP/MySQL integration and browser tests have **not** been completed in this session. Do not confuse code availability with a tested deployment.
+
+## Project scope and remaining inputs
+
+The agreed direction is a centralized administrative database for three zones and 25 branches. Official names/codes, department fields, permission rules and reporting formats still need organizational confirmation. Production hosting, security review, backups and recovery remain unfinished. Use disposable test data until those requirements are met.

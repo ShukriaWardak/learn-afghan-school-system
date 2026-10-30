@@ -1,0 +1,64 @@
+name: Backend and frontend syntax checks
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+      - feature/live-admin-integration
+jobs:
+  syntax:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: JavaScript syntax
+        run: |
+          node --check app.js
+          node --check live.js
+          node --check registry.js
+      - name: PHP syntax
+        run: |
+          find backend -type f -name '*.php' -print0 | xargs -0 -n1 php -l
+      - name: Report and CSV behavior
+        run: |
+          node tests/branch-export.cjs
+          node tests/live-reports.cjs
+          node tests/registry.cjs
+      - name: Required files
+        run: |
+          test -f database/schema.sql
+          test -f database/002_login_attempts.sql
+          test -f backend/api/branch_update.php
+          test -f backend/api/zone_create.php
+          test -f backend/api/audit.php
+          test -f database/003_personnel.sql
+  integration:
+    runs-on: ubuntu-latest
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: disposable-ci-only
+          MYSQL_ROOT_HOST: '%'
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h localhost -pdisposable-ci-only"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Prepare disposable database
+        env:
+          LEARN_INTEGRATION_TEST: '1'
+          MYSQL_TEST_PASSWORD: disposable-ci-only
+        run: php tests/setup-integration.php
+      - name: Test authenticated personnel and department APIs
+        run: |
+          php -S 127.0.0.1:8099 -t . > /tmp/learn-php-test.log 2>&1 &
+          server_pid=$!
+          trap 'kill "$server_pid"' EXIT
+          node tests/personnel-integration.cjs
+      - name: Server diagnostics
+        if: failure()
+        run: cat /tmp/learn-php-test.log || true
