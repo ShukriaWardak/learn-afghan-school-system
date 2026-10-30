@@ -113,6 +113,62 @@
             </div>
           </div>
         </section>
+        <section id="people-section" class="management" hidden aria-labelledby="people-title">
+          <h2 id="people-title">Teacher &amp; Staff Directories</h2>
+          <p class="hint">Authenticated, permission-scoped records from MySQL. Use development-only test records until personnel-data authorization and privacy review are complete.</p>
+          <div class="people-panels">
+            <section class="directory" aria-labelledby="teachers-title">
+              <div class="directory-header"><h3 id="teachers-title">Teachers</h3><button id="teachers-refresh" type="button" class="secondary">Refresh</button></div>
+              <p id="teachers-message" class="message" role="status" aria-live="polite"></p>
+              <div class="table-wrap">
+                <table><thead><tr><th scope="col">Code</th><th scope="col">Display name</th><th scope="col">Branch</th><th scope="col">Status</th></tr></thead>
+                <tbody id="teachers-rows"></tbody></table>
+              </div>
+            </section>
+            <section class="directory" aria-labelledby="staff-title">
+              <div class="directory-header"><h3 id="staff-title">Staff</h3><button id="staff-refresh" type="button" class="secondary">Refresh</button></div>
+              <p id="staff-message" class="message" role="status" aria-live="polite"></p>
+              <div class="table-wrap">
+                <table><thead><tr><th scope="col">Code</th><th scope="col">Display name</th><th scope="col">Department</th><th scope="col">Branch</th><th scope="col">Status</th></tr></thead>
+                <tbody id="staff-rows"></tbody></table>
+              </div>
+            </section>
+          </div>
+          <div id="people-admin-forms" class="management-grid" hidden>
+            <form id="teacher-form" class="admin-form">
+              <h3>Create or edit teacher record</h3>
+              <label for="teacher-record">Record</label>
+              <select id="teacher-record"><option value="">Create new teacher</option></select>
+              <label for="teacher-code">Official code</label>
+              <input id="teacher-code" required maxlength="30" pattern="[A-Za-z0-9][A-Za-z0-9_-]{1,29}">
+              <label for="teacher-name">Display name</label>
+              <input id="teacher-name" required maxlength="180">
+              <label for="teacher-branch">Assigned branch</label>
+              <select id="teacher-branch" required><option value="">Select branch</option></select>
+              <label for="teacher-status">Status</label>
+              <select id="teacher-status"><option value="pending">Pending</option><option value="active">Active</option><option value="inactive">Inactive</option></select>
+              <button type="submit" id="teacher-save">Create teacher</button>
+              <p id="teacher-save-message" class="message" role="status" aria-live="polite"></p>
+            </form>
+            <form id="staff-form" class="admin-form">
+              <h3>Create or edit staff record</h3>
+              <label for="staff-record">Record</label>
+              <select id="staff-record"><option value="">Create new staff member</option></select>
+              <label for="staff-code">Official code</label>
+              <input id="staff-code" required maxlength="30" pattern="[A-Za-z0-9][A-Za-z0-9_-]{1,29}">
+              <label for="staff-name">Display name</label>
+              <input id="staff-name" required maxlength="180">
+              <label for="staff-department">Assigned department</label>
+              <select id="staff-department" required><option value="">Select department</option></select>
+              <label for="staff-branch">Branch (optional for central staff)</label>
+              <select id="staff-branch"><option value="">Central / no branch</option></select>
+              <label for="staff-status">Status</label>
+              <select id="staff-status"><option value="pending">Pending</option><option value="active">Active</option><option value="inactive">Inactive</option></select>
+              <button type="submit" id="staff-save">Create staff member</button>
+              <p id="staff-save-message" class="message" role="status" aria-live="polite"></p>
+            </form>
+          </div>
+        </section>
         <section id="audit-section" class="management" hidden aria-labelledby="audit-title">
           <div class="directory-header">
             <div><h2 id="audit-title">Audit History</h2><p class="hint audit-caption">Latest 50 zone, branch and department changes. Detail payloads are not shown.</p></div>
