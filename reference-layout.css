@@ -11,3 +11,7 @@
 @media(max-width:1450px){.executive-stats{grid-template-columns:repeat(4,1fr)}.executive-panels{grid-template-columns:1fr 1fr}.executive-panels .panel:last-child{grid-column:span 2}.executive-bottom{grid-template-columns:repeat(2,1fr)}}
 @media(max-width:900px){.executive-panels{grid-template-columns:1fr}.executive-panels .panel:last-child{grid-column:auto}.executive-foot{grid-template-columns:1fr}.module-links{grid-template-columns:repeat(3,1fr)}}
 @media(max-width:650px){.executive-stats{grid-template-columns:repeat(2,1fr)}.executive-bottom{grid-template-columns:1fr}.banner-quote{display:none}.banner-headline{font-size:21px}.coverage-layout{grid-template-columns:1fr}.coverage-totals{flex-direction:row}.coverage-totals>div{flex:1}.afghan-map-map{height:175px}}
+
+/* Native dialog keeps keyboard focus inside personnel forms. */
+dialog.modal { max-height: calc(100dvh - 32px); overflow-y: auto; width: min(540px, calc(100vw - 32px)); }
+dialog.modal::backdrop { background: #10284998; }

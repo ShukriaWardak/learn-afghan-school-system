@@ -169,7 +169,7 @@ const Live = {
       +metric("Active branches",active,"●","Verified records")
       +metric("Assigned branch admins",assigned,"♙","Active accounts")+'</div>'
       +panel("Branch directory",rows.length?branchesTable(rows.slice(0,8)):'<div class="empty">No authorized branches are available. Ask an administrator to confirm zones and branch records.</div>','<button class="link-btn" data-go="branches">View branches →</button>')
-      +'<div class="note">Signed in as '+label+'. The staff, financial, safeguarding, approval and backup modules are NOT live yet. Do not enter sensitive records until security testing and organizational approval are complete.</div>';
+      +'<div class="note">Signed in as '+label+'. Teacher and staff directories are available in the sidebar. Financial, safeguarding, approval and backup modules are NOT live yet. Do not enter sensitive records until security testing and organizational approval are complete.</div>';
   },
   zonesView() {
     return heading("Zones","Only zones authorized for your account are shown.",this.user.role==="super_admin"?'<button class="primary-btn" id="addZone">+ Add approved zone</button>':"")

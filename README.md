@@ -14,7 +14,10 @@ This development branch (`feature/live-admin-integration`, draft PR #1) connects
 | Audit | Transactional logs for zone/branch writes; recent 100 events | Verify against a running database |
 | CSV | Authorized branch export; branch-page search/zone filters; formula neutralization | Export helper checks passed; browser download testing pending |
 | Reports | Signed-in branch status totals, zone breakdown and authorized CSV download | Isolated report checks passed; browser/MySQL integration pending |
-| Other modules | Planning screens | Staff, teachers, students, finance, health and approvals are not implemented |
+| Departments | Super-admin directory, create and rename; transactional audit events | Uses existing departments table; parent assignments preserved |
+| Teachers / Staff | Scoped directories, search/status filters, super-admin create/edit/inactivate, stale-edit protection | Requires migration 003; personnel records do not create login accounts |
+| Branch admins | Super-admin read-only directory of branch-admin accounts | Account provisioning/editing still pending |
+| Other modules | Planning screens | Students, finance, health and approvals are not implemented |
 | Operations | Setup instructions and syntax-check workflow | PDF/Excel reporting, backups/recovery and production readiness remain |
 
 The proposal targets **3 zones and 25 branches**. These are planned scope, not verified live counts. No official zone/branch records or default accounts are seeded. The dashboard's live counts reflect only records accessible to the signed-in account.
@@ -41,6 +44,16 @@ git pull --ff-only origin feature/live-admin-integration
 4. Use an authorized local test account. For an empty installation, follow the CLI first-admin instructions in [backend/README.md](backend/README.md).
 5. If the folder is named `learn-afghan-school-system`, open **http://localhost/learn-afghan-school-system/index.html**. Adjust the folder name if necessary.
 6. Sign in. With an empty database, zero zones/branches is expected. Add a test zone, add a test branch, edit it, reload, and verify audit history using disposable local data.
+
+### Departments, teachers and staff
+
+Import `database/003_personnel.sql` after the first two SQL files. This migration adds the personnel table without replacing existing tables or records. It is also required for existing installations upgrading to these modules.
+
+As a super administrator, open **Departments**, add an approved code/name, then open **Teachers** or **Staff & HR**. Add a record with a unique code, full name, branch, department, job title and status. Codes and record type remain fixed after creation. Edit a record to change its assignment or mark it inactive; no deletion is implemented. Existing department parent assignments are displayed and preserved; editing the hierarchy is not implemented.
+
+Zone and branch administrators can read personnel only within their assigned zone or branch. Department users have no personnel access yet. Only super administrators can write records or view the central department and branch-admin directories. Staff records are separate from login accounts, and this first registry does not include payroll, attendance, contact details or identity documents. The personnel and branch-admin directories display at most 1,000 records; filters search those loaded records.
+
+Run `node tests/registry.cjs` for isolated directory checks. The GitHub Actions integration job creates a disposable MySQL database and checks creation, editing, duplicate/invalid input, stale edits, CSRF, role boundaries, audit events and logout through the PHP APIs. `tests/setup-integration.php` refuses an existing database and is for disposable CI only. Check the workflow result for the exact commit before treating integration tests as passed.
 
 Opening `index.html` directly via `file://` shows a separately labelled browser-only demo. Demo edits use localStorage and do not populate MySQL. GitHub displays source code; it is not a running PHP/MySQL service.
 
