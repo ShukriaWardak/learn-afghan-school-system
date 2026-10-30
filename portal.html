@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#081b39">
+  <title>LEARN Afghan | Connected Portal</title>
+  <link rel="stylesheet" href="portal.css">
+  <script src="portal.js" defer></script>
+</head>
+<body>
+  <div class="shell">
+    <header class="top">
+      <div class="brand"><span class="brand-mark" aria-hidden="true">◫</span><div><strong>LEARN AFGHAN</strong><small>Central Database · Development Portal</small></div></div>
+      <a href="index.html" class="demo-link">View dashboard demo</a>
+    </header>
+    <main class="main">
+      <section id="login-view" class="login-card" aria-labelledby="login-title">
+        <span class="eyebrow">PHP + MySQL integration</span>
+        <h1 id="login-title">Sign in</h1>
+        <p class="hint">Use an account created by an authorized local administrator. This is a development environment—not a production system.</p>
+        <form id="login-form">
+          <label for="username">Username</label>
+          <input id="username" name="username" type="text" maxlength="100" autocomplete="username" required>
+          <label for="password">Password</label>
+          <input id="password" name="password" type="password" autocomplete="current-password" required>
+          <button id="login-button" type="submit">Sign in</button>
+        </form>
+        <p id="login-message" class="message" role="status" aria-live="polite"></p>
+        <p class="small-print">Start Apache and MySQL in XAMPP and import both SQL scripts. If no authorized account exists, use the local CLI setup described in the backend README.</p>
+      </section>
+
+      <section id="app-view" hidden aria-labelledby="portal-title">
+        <div class="portal-heading">
+          <div><span class="eyebrow">Live, read-only database view</span><h1 id="portal-title">Branch directory</h1><p id="account-label" class="hint"></p></div>
+          <button id="logout-button" type="button" class="secondary">Sign out</button>
+        </div>
+        <div class="notice">Only approved database records are shown. There are no sample branches or local demo edits in this view.</div>
+        <div class="summary">
+          <div><span>Visible branches</span><strong id="branch-total">—</strong></div>
+          <div><span>Visible zones</span><strong id="zone-total">—</strong></div>
+        </div>
+        <div class="directory">
+          <div class="directory-header"><h2>Authorized branch records</h2><button type="button" id="refresh-button" class="secondary">Refresh</button></div>
+          <div class="filters">
+            <label for="branch-search">Search<input id="branch-search" type="search" placeholder="Search by code, name or location"></label>
+            <label for="zone-filter">Zone<select id="zone-filter"><option value="">All visible zones</option></select></label>
+          </div>
+          <p id="branches-message" class="message" role="status" aria-live="polite"></p>
+          <div class="table-wrap"><table><thead><tr><th scope="col">Code</th><th scope="col">Branch</th><th scope="col">Zone</th><th scope="col">Location</th><th scope="col">Status</th></tr></thead><tbody id="branch-rows"></tbody></table></div>
+        </div>
+      </section>
+    </main>
+    <footer>Development preview only · Do not enter sensitive records before security testing and approval.</footer>
+  </div>
+</body>
+</html>
