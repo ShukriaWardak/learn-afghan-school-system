@@ -73,7 +73,28 @@ function render(){navigation();$("#crumb").textContent=titleOf(current);$("#main
 function updateTable(){const rows=state.branches.filter(b=>(filterZone==="all"||b.zone===filterZone)&&JSON.stringify(b).toLowerCase().includes(filterText.toLowerCase()));$("#branchTable").innerHTML=branchesTable(rows)}
 function toast(msg){const t=document.createElement("div");t.className="toast";t.textContent=msg;document.body.append(t);setTimeout(()=>t.remove(),3000)}
 function openBranchModal(){if(Live.active)return Live.openBranchModal();const layer=document.createElement("div");layer.className="modal-overlay";layer.innerHTML='<form class="modal" id="branchForm"><h2>Edit demo branch</h2><p class="muted">Select a branch and update its local demonstration details. No server data is changed.</p><div class="form-grid"><label>Branch<select class="field" id="editId">'+state.branches.map(b=>'<option value="'+b.id+'">'+escapeHtml(b.code+" — "+b.name)+'</option>').join("")+'</select></label><label>Zone<select class="field" id="editZone">'+[1,2,3].map(i=>'<option>Zone '+i+'</option>').join("")+'</select></label><label>Branch name<input class="field" id="editName" maxlength="70" required></label><label>Admin name<input class="field" id="editAdmin" maxlength="70" required></label><label>Status<select class="field" id="editStatus"><option>Pending setup</option><option>Active</option><option>Inactive</option></select></label></div><div class="modal-actions"><button type="button" id="cancelEdit" class="ghost-btn">Cancel</button><button type="submit" class="primary-btn">Save demo changes</button></div></form>';document.body.append(layer);const fill=()=>{let b=state.branches.find(x=>x.id===Number($("#editId").value));$("#editZone").value=b.zone;$("#editName").value=b.name;$("#editAdmin").value=b.admin;$("#editStatus").value=b.status};$("#editId").onchange=fill;fill();$("#cancelEdit").onclick=()=>layer.remove();layer.onclick=e=>{if(e.target===layer)layer.remove()};$("#branchForm").onsubmit=e=>{e.preventDefault();let b=state.branches.find(x=>x.id===Number($("#editId").value));b.zone=$("#editZone").value;b.name=$("#editName").value.trim();b.admin=$("#editAdmin").value.trim();b.status=$("#editStatus").value;state.activity.unshift({text:"Updated "+b.code+" (demo)",time:new Date().toLocaleString()});save();layer.remove();render();toast("Demo branch updated locally")}}
-function exportCSV(){const rows=[["Code","Branch","Zone","Admin","Status"],...state.branches.map(b=>[b.code,b.name,b.zone,b.admin,b.status])];const csv=rows.map(r=>r.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(",")).join("\r\n");const blob=new Blob(["\uFEFF"+csv],{type:"text/csv;charset=utf-8"});const url=URL.createObjectURL(blob);const a=document.createElement("a");a.href=url;a.download=Live.active?"learn-afghan-authorized-branches.csv":"learn-afghan-demo-branches.csv";a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);toast(Live.active?"Scoped branch CSV exported":"Demo CSV exported")}
+function csvCell(value) {
+ const text=String(value??"");
+ // Spreadsheet applications may execute formulas even inside quoted CSV fields.
+ const safe=/^[\s\uFEFF]*[=+@-]/u.test(text)||/^[\t\r\n]/u.test(text)?"'"+text:text;
+ return '"'+safe.replace(/"/g,'""')+'"';
+}
+function branchExportRows() {
+ return state.branches.filter(b=>
+  current!=="branches" ||
+  ((filterZone==="all"||b.zone===filterZone)&&
+   JSON.stringify(b).toLowerCase().includes(filterText.toLowerCase())));
+}
+function exportCSV(){
+ const branches=branchExportRows();
+ const rows=[["Code","Branch","Zone","Admin","Status"],...branches.map(b=>[b.code,b.name,b.zone,b.admin,b.status])];
+ const csv=rows.map(r=>r.map(csvCell).join(",")).join("\r\n");
+ const blob=new Blob(["\uFEFF"+csv],{type:"text/csv;charset=utf-8"});
+ const url=URL.createObjectURL(blob);const a=document.createElement("a");a.href=url;
+ a.download=Live.active?"learn-afghan-authorized-branches.csv":"learn-afghan-demo-branches.csv";
+ a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);
+ toast((Live.active?"Authorized":"Demo")+" branch CSV exported ("+branches.length+" records)");
+}
 $("#menu").onclick=()=>$("#sidebar").classList.toggle("open");
 $("#language").onclick=()=>toast("Additional languages and RTL support are planned.");
 render();
