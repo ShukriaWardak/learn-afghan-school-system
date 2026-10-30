@@ -4,6 +4,8 @@
   const apiBase = "backend/api/";
   let csrfToken = "";
   let branches = [];
+  let zones = [];
+  let currentUser = null;
 
   async function apiRequest(path, options = {}) {
     const response = await fetch(apiBase + path, {
@@ -36,6 +38,9 @@
 
   function showLogin() {
     branches = [];
+    zones = [];
+    currentUser = null;
+    get("management-section").hidden = true;
     get("branch-rows").replaceChildren();
     get("login-view").hidden = false;
     get("app-view").hidden = true;
@@ -44,6 +49,8 @@
   }
 
   function showPortal(user) {
+    currentUser = user;
+    get("management-section").hidden = user.role !== "super_admin";
     get("login-view").hidden = true;
     get("app-view").hidden = false;
     const name = String(user.display_name || user.username || "Account");
@@ -93,6 +100,7 @@
       branches = result.branches;
       updateZoneOptions();
       renderBranches();
+      if (currentUser?.role === "super_admin") populateBranchEditor();
     } catch (error) {
       branches = [];
       updateZoneOptions();
@@ -107,6 +115,121 @@
       get("refresh-button").disabled = false;
     }
   }
+
+  /** Management form options come only from authorized database responses. */
+  async function loadZones() {
+    if (currentUser?.role !== "super_admin") return;
+    message("zone-message", "Loading approved zones...");
+    try {
+      const result = await apiRequest("zones.php");
+      if (!Array.isArray(result.zones)) throw new Error("Unexpected zones response");
+      zones = result.zones;
+      const select = get("branch-zone");
+      const previous = select.value;
+      select.replaceChildren(new Option("Select an approved zone", ""));
+      for (const zone of zones) {
+        select.add(new Option(String(zone.code) + " — " + String(zone.name), String(zone.id)));
+      }
+      if (zones.some((z) => String(z.id) === previous)) select.value = previous;
+      else select.value = "";
+      if (zones.length === 0) {
+        message("zone-message", "No approved zones yet. Add a confirmed zone before creating a branch.");
+      } else {
+        message("zone-message", "");
+      }
+      fillBranchEditor();
+    } catch (error) {
+      zones = [];
+      get("branch-zone").replaceChildren(new Option("Zones unavailable", ""));
+      message("zone-message", error.message, true);
+    }
+  }
+
+  function populateBranchEditor() {
+    const select = get("branch-record");
+    const selected = select.value;
+    select.replaceChildren(new Option("Create a new branch", ""));
+    for (const branch of branches) {
+      select.add(new Option(
+        String(branch.code) + " — " + String(branch.name),
+        String(branch.id)
+      ));
+    }
+    select.value = branches.some((b) => String(b.id) === selected) ? selected : "";
+    fillBranchEditor();
+  }
+
+  function fillBranchEditor() {
+    const selected = get("branch-record").value;
+    const branch = branches.find((b) => String(b.id) === selected);
+    get("branch-code").value = branch ? String(branch.code) : "";
+    get("branch-name").value = branch ? String(branch.name) : "";
+    get("branch-location").value = branch ? String(branch.location || "") : "";
+    get("branch-status").value = branch ? String(branch.status) : "pending";
+    get("branch-zone").value = branch && zones.some((z) => String(z.id) === String(branch.zone_id))
+      ? String(branch.zone_id) : "";
+    get("branch-save-button").textContent = branch ? "Save changes" : "Create branch";
+    message("branch-save-message", "");
+  }
+
+  function writeOptions(data) {
+    return {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "X-CSRF-Token": csrfToken },
+      body: JSON.stringify(data)
+    };
+  }
+
+  get("zone-form").addEventListener("submit", async (event) => {
+    event.preventDefault();
+    if (currentUser?.role !== "super_admin") return;
+    const button = get("zone-save-button");
+    button.disabled = true;
+    message("zone-message", "Saving zone...");
+    try {
+      const code = get("zone-code").value.trim();
+      const name = get("zone-name").value.trim();
+      await apiRequest("zones.php", writeOptions({ code, name }));
+      get("zone-form").reset();
+      await loadZones();
+      message("zone-message", "Zone saved in MySQL and audited.");
+    } catch (error) {
+      message("zone-message", error.message, true);
+    } finally {
+      button.disabled = false;
+    }
+  });
+
+  get("branch-record").addEventListener("change", fillBranchEditor);
+
+  get("branch-form").addEventListener("submit", async (event) => {
+    event.preventDefault();
+    if (currentUser?.role !== "super_admin") return;
+    const button = get("branch-save-button");
+    button.disabled = true;
+    message("branch-save-message", "Saving branch...");
+    try {
+      const existingId = get("branch-record").value;
+      const data = {
+        action: existingId ? "update" : "create",
+        zone_id: Number(get("branch-zone").value),
+        code: get("branch-code").value.trim(),
+        name: get("branch-name").value.trim(),
+        location: get("branch-location").value.trim(),
+        status: get("branch-status").value
+      };
+      if (existingId) data.id = Number(existingId);
+      const result = await apiRequest("branch_save.php", writeOptions(data));
+      await loadBranches();
+      get("branch-record").value = String(result.branch.id);
+      fillBranchEditor();
+      message("branch-save-message", "Branch saved in MySQL and audited.");
+    } catch (error) {
+      message("branch-save-message", error.message, true);
+    } finally {
+      button.disabled = false;
+    }
+  });
 
   get("login-form").addEventListener("submit", async (event) => {
     event.preventDefault();
@@ -127,6 +250,7 @@
       if (!result.user || !csrfToken) throw new Error("Unexpected sign-in response");
       showPortal(result.user);
       await loadBranches();
+      if (currentUser?.role === "super_admin") await loadZones();
     } catch (error) {
       message("login-message", error.message, true);
     } finally {
@@ -163,6 +287,7 @@
       csrfToken = String(result.csrf_token || "");
       showPortal(result.user);
       await loadBranches();
+      if (currentUser?.role === "super_admin") await loadZones();
     } catch (error) {
       showLogin();
       if (error.status === 401) {
