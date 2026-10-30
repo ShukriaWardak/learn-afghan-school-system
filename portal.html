@@ -32,10 +32,10 @@
 
       <section id="app-view" hidden aria-labelledby="portal-title">
         <div class="portal-heading">
-          <div><span class="eyebrow">Live, read-only database view</span><h1 id="portal-title">Branch directory</h1><p id="account-label" class="hint"></p></div>
+          <div><span class="eyebrow">MySQL-connected branch directory</span><h1 id="portal-title">Branch directory</h1><p id="account-label" class="hint"></p></div>
           <button id="logout-button" type="button" class="secondary">Sign out</button>
         </div>
-        <div class="notice">Only approved database records are shown. There are no sample branches or local demo edits in this view.</div>
+        <div class="notice">Records below come from MySQL, not the demonstration dashboard. Super admins can create and edit approved organizational records in the management section. Do not use personal data during development.</div>
         <div class="summary">
           <div><span>Visible branches</span><strong id="branch-total">—</strong></div>
           <div><span>Visible zones</span><strong id="zone-total">—</strong></div>
@@ -49,6 +49,42 @@
           <p id="branches-message" class="message" role="status" aria-live="polite"></p>
           <div class="table-wrap"><table><thead><tr><th scope="col">Code</th><th scope="col">Branch</th><th scope="col">Zone</th><th scope="col">Location</th><th scope="col">Status</th></tr></thead><tbody id="branch-rows"></tbody></table></div>
         </div>
+        <section id="management-section" class="management" hidden aria-labelledby="management-title">
+          <h2 id="management-title">Manage zones & branches</h2>
+          <p class="hint">Super admin only. Enter officially confirmed codes and names—not invented or demo records. All changes are recorded in the audit table.</p>
+          <div class="management-grid">
+            <form id="zone-form" class="admin-form">
+              <h3>Add an approved zone</h3>
+              <label for="zone-code">Zone code</label>
+              <input id="zone-code" name="code" required maxlength="30" pattern="[A-Za-z0-9][A-Za-z0-9_-]{1,29}" placeholder="Official code">
+              <label for="zone-name">Official zone name</label>
+              <input id="zone-name" name="name" required maxlength="150" placeholder="Confirmed by administration">
+              <button id="zone-save-button" type="submit">Save zone</button>
+              <p id="zone-message" class="message" role="status" aria-live="polite"></p>
+            </form>
+            <form id="branch-form" class="admin-form">
+              <h3>Create or edit an approved branch</h3>
+              <label for="branch-record">Branch record</label>
+              <select id="branch-record"><option value="">Create a new branch</option></select>
+              <label for="branch-zone">Zone</label>
+              <select id="branch-zone" required><option value="">Select an approved zone</option></select>
+              <label for="branch-code">Branch code</label>
+              <input id="branch-code" required maxlength="30" pattern="[A-Za-z0-9][A-Za-z0-9_-]{1,29}" placeholder="Official code">
+              <label for="branch-name">Official branch name</label>
+              <input id="branch-name" required maxlength="180" placeholder="Confirmed by administration">
+              <label for="branch-location">Location (optional)</label>
+              <input id="branch-location" maxlength="250" placeholder="Approved location description">
+              <label for="branch-status">Status</label>
+              <select id="branch-status">
+                <option value="pending">Pending</option>
+                <option value="active">Active</option>
+                <option value="inactive">Inactive</option>
+              </select>
+              <button id="branch-save-button" type="submit">Save branch</button>
+              <p id="branch-save-message" class="message" role="status" aria-live="polite"></p>
+            </form>
+          </div>
+        </section>
       </section>
     </main>
     <footer>Development preview only · Do not enter sensitive records before security testing and approval.</footer>
