@@ -1,6 +1,6 @@
 # PHP / MySQL backend — development foundation
 
-The root `index.html` remains a **localStorage-only, unauthenticated visual demo** and is **not connected** to these endpoints. Do not store real organization, student, staff, financial or healthcare records in the demo.
+On `feature/live-admin-integration`, the root `index.html` uses `live.js` to connect to these endpoints when served through the configured PHP server. Opening it directly as a file shows the separately labelled localStorage demo. See the root README for the current branch and progress. Use disposable local test records; end-to-end validation is still pending.
 
 ## Set up in XAMPP (local only)
 1. Start Apache and MySQL/MariaDB. PHP 8.1+ is required.
@@ -21,9 +21,9 @@ Login failures are stored in `login_attempts` for basic throttling. Remove old l
 
 ## Still required before production
 - **Do not deploy yet.** Review all access controls, require HTTPS, add secure trusted-host verification, configure error logs and privacy-safe monitoring.
-- Create a first-admin enrollment process that requires administrative approval; protect any administrative account creation.
+- Validate the CLI first-admin enrollment helper below and define the remaining approved account-management process.
 - Apply strong password rules, account recovery policy, password rehashing, login attempt retention and session expiration.
-- Implement server-side form validation, per-operation permission matrix, CSRF protection for every state-changing action, audit inserts, backups/recovery tests, and approved reporting.
+- Validate existing zone/branch form validation, CSRF checks and transactional audit inserts; extend these controls to future modules. Approve the full permission matrix and implement backups/recovery tests and reporting.
 - Configure database credentials outside public web root in production; perform threat modeling and security tests.
 - Official zone names/codes, branch names/codes, department records and form fields must be approved.
 - GitHub Pages **cannot run PHP or MySQL**.
