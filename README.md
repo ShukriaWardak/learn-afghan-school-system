@@ -45,3 +45,8 @@ The repository now includes `database/schema.sql` and a separate `backend/` with
 
 ## Phase 3: authentication foundation
 The backend now includes `backend/api/login.php`, `logout.php`, `csrf.php`, `session.php`, and authorization checks for the branch list. Apply `database/002_login_attempts.sql` after the main schema. These endpoints have **not yet been tested in a running XAMPP installation**, and the frontend is **not connected**. No real accounts are pre-created. See [backend setup](backend/README.md). Do not deploy or enter real personal data until security work and testing are completed.
+
+## Phase 4: connected portal preview (development only)
+A separate [portal.html](portal.html) now provides a session-backed sign-in interface and a **read-only, permission-scoped** MySQL branch directory using the PHP APIs in `backend/api/`. The existing `index.html` remains unchanged as the visual demo; the portal intentionally does not display the demo's placeholder branch data.
+
+To run locally, see [backend setup](backend/README.md). Start XAMPP Apache/MySQL, import both SQL scripts, configure local database credentials, and use a **locally authorized, development-only account**. Navigate to `http://localhost/learn-afghan-school-system/portal.html` if the repository lives under `htdocs/learn-afghan-school-system` (otherwise adjust the folder name). The new portal has not been tested in the team's XAMPP instance; do not deploy it or enter confidential data.
