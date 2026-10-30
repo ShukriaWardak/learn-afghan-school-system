@@ -50,3 +50,12 @@ The backend now includes `backend/api/login.php`, `logout.php`, `csrf.php`, `ses
 A separate [portal.html](portal.html) now provides a session-backed sign-in interface, a **permission-scoped** MySQL branch directory, and Super Admin-only zone/branch management using the PHP APIs in `backend/api/`. The existing `index.html` remains unchanged as the visual demo; the portal intentionally does not display the demo's placeholder branch data.
 
 To run locally, see [backend setup](backend/README.md). Start XAMPP Apache/MySQL, import both SQL scripts, configure local database credentials, and use a **locally authorized, development-only account**. Navigate to `http://localhost/learn-afghan-school-system/portal.html` if the repository lives under `htdocs/learn-afghan-school-system` (otherwise adjust the folder name). The new portal has not been tested in the team's XAMPP instance; do not deploy it or enter confidential data. Authorized Super Admin writes are validated on the PHP server and recorded in the database audit table. Only create records with officially confirmed codes and names.
+
+## Phase 6–7: Department records, audit viewer, and CSV export
+The development portal also includes:
+- A **Super Admin-only department manager** to create top-level departments or update existing department code/name without modifying existing parent relationships.
+- A **read-only audit history view** of the latest 50 zone, branch and department changes; detailed audit payloads are intentionally not shown.
+- **Role-scoped CSV export** of authorized branch records. Exports use the same server-side scope as the branch list. Cells with formula-like prefixes are protected for spreadsheet viewing.
+- Test checklists: [Phase 5](docs/phase5-local-tests.md), [Phase 6](docs/phase6-local-tests.md) and [Phase 7](docs/phase7-csv-export-tests.md).
+
+The connected portal still requires **live XAMPP testing and security review**. The original dashboard at `index.html` remains unchanged.
