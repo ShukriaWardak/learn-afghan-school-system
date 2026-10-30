@@ -35,3 +35,12 @@ form button{margin-top:17px}.secondary{background:#143b66;border-color:#356c9b}.
 table{width:100%;border-collapse:collapse;text-align:left}th,td{padding:13px;border-bottom:1px solid #2e5170;font-size:13px}th{color:#a7c9e9;font-size:11px;text-transform:uppercase;letter-spacing:.7px}td{color:#edf7ff}
 footer{text-align:center;font-size:12px;color:#8caacc;padding:23px}
 @media(max-width:600px){.brand strong{font-size:15px}.brand small{font-size:9px}.demo-link{font-size:11px}.main{padding:17px}.login-card{margin-top:15px}.summary{gap:9px}.summary div{padding:14px}}
+
+/* Authenticated zone/branch management — supplements, never replaces, server checks. */
+.management{margin-top:24px;border:1px solid #28557e;border-radius:13px;background:#0b2544;padding:22px}
+.management>.hint{max-width:770px;margin-top:9px}
+.management-grid{display:grid;grid-template-columns:1fr 1.25fr;align-items:start;gap:18px}
+.admin-form{border:1px solid #305579;border-radius:12px;background:#102f54;padding:20px;display:grid;gap:10px}
+.admin-form h3{font-size:16px;margin:0 0 5px}.admin-form label{font-size:12px;color:#c4ddf2;margin:2px 0 0}
+.admin-form .message{margin:3px 0 0}
+@media(max-width:750px){.management{padding:13px}.management-grid{grid-template-columns:1fr}.admin-form{padding:15px}}
