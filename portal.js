@@ -6,6 +6,7 @@
   let branches = [];
   let zones = [];
   let departments = [];
+  const people = {teacher: [], staff: []};
   let currentUser = null;
 
   async function apiRequest(path, options = {}) {
@@ -41,10 +42,13 @@
     branches = [];
     zones = [];
     departments = [];
+    people.teacher = [];
+    people.staff = [];
     currentUser = null;
     get("management-section").hidden = true;
     get("department-section").hidden = true;
     get("audit-section").hidden = true;
+    get("people-section").hidden = true;
     get("branch-rows").replaceChildren();
     get("login-view").hidden = false;
     get("app-view").hidden = true;
@@ -57,6 +61,8 @@
     get("management-section").hidden = user.role !== "super_admin";
     get("department-section").hidden = user.role !== "super_admin";
     get("audit-section").hidden = user.role !== "super_admin";
+    get("people-section").hidden = !["super_admin", "zone_admin", "branch_admin"].includes(user.role);
+    get("people-admin-forms").hidden = user.role !== "super_admin";
     get("login-view").hidden = true;
     get("app-view").hidden = false;
     const name = String(user.display_name || user.username || "Account");
@@ -106,7 +112,10 @@
       branches = result.branches;
       updateZoneOptions();
       renderBranches();
-      if (currentUser?.role === "super_admin") populateBranchEditor();
+      if (currentUser?.role === "super_admin") {
+        populateBranchEditor();
+        refreshPeopleOptions();
+      }
     } catch (error) {
       branches = [];
       updateZoneOptions();
@@ -284,6 +293,7 @@
       departments = result.departments;
       renderDepartments();
       populateDepartmentEditor();
+      refreshPeopleOptions();
     } catch (error) {
       departments = [];
       get("departments-rows").replaceChildren();
@@ -352,6 +362,134 @@
     }
   });
 
+  function peopleIds(kind) {
+    return kind === "teacher"
+      ? {rows:"teachers-rows", message:"teachers-message", refresh:"teachers-refresh", record:"teacher-record",code:"teacher-code",name:"teacher-name",branch:"teacher-branch",status:"teacher-status",save:"teacher-save",saveMessage:"teacher-save-message"}
+      : {rows:"staff-rows", message:"staff-message", refresh:"staff-refresh", record:"staff-record",code:"staff-code",name:"staff-name",branch:"staff-branch",department:"staff-department",status:"staff-status",save:"staff-save",saveMessage:"staff-save-message"};
+  }
+
+  function refreshPeopleOptions() {
+    if (currentUser?.role !== "super_admin") return;
+    for (const kind of ["teacher","staff"]) {
+      const config = peopleIds(kind);
+      const branchSelect = get(config.branch);
+      const oldBranch = branchSelect.value;
+      branchSelect.replaceChildren(new Option(kind === "teacher" ? "Select branch" : "Central / no branch", ""));
+      for (const b of branches) {
+        branchSelect.add(new Option(String(b.code) + " — " + String(b.name), String(b.id)));
+      }
+      branchSelect.value = branches.some(b => String(b.id) === oldBranch) ? oldBranch : "";
+    }
+    const departmentSelect = get("staff-department");
+    const oldDepartment = departmentSelect.value;
+    departmentSelect.replaceChildren(new Option("Select department", ""));
+    for (const d of departments) departmentSelect.add(new Option(String(d.code) + " — " + String(d.name), String(d.id)));
+    departmentSelect.value = departments.some(d => String(d.id) === oldDepartment) ? oldDepartment : "";
+  }
+
+  function fillPeopleEditor(kind) {
+    const c = peopleIds(kind);
+    const current = people[kind].find(item => String(item.id) === get(c.record).value);
+    get(c.code).value = current ? String(current.code) : "";
+    get(c.name).value = current ? String(current.display_name) : "";
+    get(c.branch).value = current?.branch_id == null ? "" : String(current.branch_id);
+    if (c.department) get(c.department).value = current ? String(current.department_id) : "";
+    get(c.status).value = current ? String(current.status) : "pending";
+    get(c.save).textContent = current ? "Save changes" : ("Create " + kind);
+    message(c.saveMessage,"");
+  }
+
+  function populatePeopleEditor(kind) {
+    if (currentUser?.role !== "super_admin") return;
+    const c = peopleIds(kind);
+    const select = get(c.record);
+    const old = select.value;
+    select.replaceChildren(new Option("Create new " + kind, ""));
+    for (const row of people[kind]) select.add(new Option(String(row.code) + " — " + String(row.display_name), String(row.id)));
+    select.value = people[kind].some(row => String(row.id) === old) ? old : "";
+    fillPeopleEditor(kind);
+  }
+
+  function renderPeople(kind) {
+    const c = peopleIds(kind);
+    const target = get(c.rows);
+    target.replaceChildren();
+    for (const item of people[kind]) {
+      const values = kind === "teacher"
+        ? [item.code, item.display_name, item.branch_name, item.status]
+        : [item.code, item.display_name, item.department_name, item.branch_name || "Central / unassigned", item.status];
+      const tr = document.createElement("tr");
+      for (const value of values) {
+        const td = document.createElement("td");
+        td.textContent = String(value ?? "—");
+        tr.appendChild(td);
+      }
+      target.appendChild(tr);
+    }
+    message(c.message,people[kind].length ? "" : "No authorized " + kind + " records to display.");
+  }
+
+  async function loadPeople(kind) {
+    if (!currentUser || get("people-section").hidden) return;
+    const c = peopleIds(kind), button = get(c.refresh);
+    button.disabled = true;
+    message(c.message, "Loading...");
+    try {
+      const data = await apiRequest("people.php?kind=" + encodeURIComponent(kind));
+      if (!Array.isArray(data.records)) throw new Error("Unexpected directory response");
+      people[kind] = data.records;
+      renderPeople(kind);
+      populatePeopleEditor(kind);
+    } catch (error) {
+      people[kind] = [];
+      get(c.rows).replaceChildren();
+      message(c.message, error.message, true);
+    } finally {
+      button.disabled = false;
+    }
+  }
+
+  for (const kind of ["teacher","staff"]) {
+    const c = peopleIds(kind);
+    get(c.refresh).addEventListener("click",() => loadPeople(kind));
+    get(c.record).addEventListener("change",() => fillPeopleEditor(kind));
+    get(kind + "-form").addEventListener("submit", async (event) => {
+      event.preventDefault();
+      if (currentUser?.role !== "super_admin") return;
+      const button = get(c.save);
+      button.disabled = true;
+      message(c.saveMessage,"Saving...");
+      try {
+        const selected = get(c.record).value;
+        const body = {
+          action: selected ? "update" : "create",
+          code: get(c.code).value.trim(),
+          display_name: get(c.name).value.trim(),
+          branch_id: get(c.branch).value === "" ? null : Number(get(c.branch).value),
+          status: get(c.status).value
+        };
+        if (selected) body.id = Number(selected);
+        if (kind === "staff") body.department_id = Number(get(c.department).value);
+        const result = await apiRequest("people.php?kind=" + encodeURIComponent(kind),writeOptions(body));
+        await loadPeople(kind);
+        get(c.record).value = String(result.record.id);
+        fillPeopleEditor(kind);
+        await loadAudit();
+        message(c.saveMessage,"Record saved in MySQL and audited.");
+      } catch (error) {
+        message(c.saveMessage,error.message,true);
+      } finally {
+        button.disabled = false;
+      }
+    });
+  }
+
+  async function initializePeople() {
+    if (!currentUser || get("people-section").hidden) return;
+    if (currentUser.role === "super_admin") refreshPeopleOptions();
+    await Promise.all([loadPeople("teacher"),loadPeople("staff")]);
+  }
+
   get("login-form").addEventListener("submit", async (event) => {
     event.preventDefault();
     const button = get("login-button");
@@ -376,6 +514,7 @@
         await loadDepartments();
         await loadAudit();
       }
+      await initializePeople();
     } catch (error) {
       message("login-message", error.message, true);
     } finally {
@@ -453,6 +592,7 @@
         await loadDepartments();
         await loadAudit();
       }
+      await initializePeople();
     } catch (error) {
       showLogin();
       if (error.status === 401) {
