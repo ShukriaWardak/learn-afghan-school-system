@@ -13,6 +13,7 @@ This development branch (`feature/live-admin-integration`, draft PR #1) connects
 | Users | Super-admin read-only directory, first 200 accounts | Invitations, editing, reset and MFA are not implemented |
 | Audit | Transactional logs for zone/branch writes; recent 100 events | Verify against a running database |
 | CSV | Authorized branch export; branch-page search/zone filters; formula neutralization | Export helper checks passed; browser download testing pending |
+| Reports | Signed-in branch status totals, zone breakdown and authorized CSV download | Isolated report checks passed; browser/MySQL integration pending |
 | Other modules | Planning screens | Staff, teachers, students, finance, health and approvals are not implemented |
 | Operations | Setup instructions and syntax-check workflow | PDF/Excel reporting, backups/recovery and production readiness remain |
 

@@ -143,6 +143,21 @@ const Live = {
     return heading("Audit History","Last 100 server-side events. Login-attempt logs are stored separately. Change details are intentionally excluded from this UI.")
       +panel("Audit event history",rows?'<div class="table-wrap"><table><thead><tr><th>Time</th><th>Actor</th><th>Action</th><th>Entity</th><th>Record ID</th></tr></thead><tbody>'+rows+'</tbody></table></div>':'<div class="empty">No audit events have been written yet.</div>');
   },
+  reportsView() {
+    const rows=state.branches;
+    const count=status=>rows.filter(b=>b.status===status).length;
+    const summaries=this.zones.map(zone=>{
+      const branches=rows.filter(b=>b.zone_id===zone.id);
+      return '<tr><td>'+escapeHtml(zone.code)+'</td><td>'+escapeHtml(zone.name)+'</td><td>'+branches.length+'</td><td>'+branches.filter(b=>b.status==="Active").length+'</td><td>'+branches.filter(b=>b.status==="Inactive").length+'</td><td>'+branches.filter(b=>b.status==="Pending setup").length+'</td></tr>';
+    }).join("");
+    return heading("Reports & Export","Branch report from the records loaded for your signed-in account. Reload the page to retrieve newer changes.")
+      +'<div class="metrics">'+metric("Accessible branches",rows.length,"▦","Authorized records")
+      +metric("Active",count("Active"),"●","Database status")
+      +metric("Inactive",count("Inactive"),"○","Database status")
+      +metric("Pending setup",count("Pending setup"),"◷","Database status")+'</div>'
+      +panel("Branches by zone",summaries?'<div class="table-wrap"><table><thead><tr><th>Code</th><th>Zone</th><th>Total</th><th>Active</th><th>Inactive</th><th>Pending</th></tr></thead><tbody>'+summaries+'</tbody></table></div>':'<div class="empty">No authorized zones are available.</div>')
+      +panel("Export branch records",'<p>Download all '+rows.length+' accessible branch records as CSV. For a filtered export, open Branches and apply search or zone filters.</p><div class="toolbar"><button class="primary-btn" id="exportBranches">Download authorized branch CSV</button><button class="ghost-btn" data-go="branches">Filter in Branches</button></div><p class="muted">CSV includes code, branch, zone, admin and status. Excel workbook and PDF exports are not implemented.</p>');
+  },
   overview() {
     const rows=state.branches;
     const assigned=rows.filter(x=>x.admin!=="Not assigned").length;

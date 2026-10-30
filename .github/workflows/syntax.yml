@@ -17,6 +17,10 @@ jobs:
       - name: PHP syntax
         run: |
           find backend -type f -name '*.php' -print0 | xargs -0 -n1 php -l
+      - name: Report and CSV behavior
+        run: |
+          node tests/branch-export.cjs
+          node tests/live-reports.cjs
       - name: Required files
         run: |
           test -f database/schema.sql
