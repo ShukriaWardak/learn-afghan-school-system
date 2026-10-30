@@ -5,6 +5,7 @@
   let csrfToken = "";
   let branches = [];
   let zones = [];
+  let departments = [];
   let currentUser = null;
 
   async function apiRequest(path, options = {}) {
@@ -39,8 +40,11 @@
   function showLogin() {
     branches = [];
     zones = [];
+    departments = [];
     currentUser = null;
     get("management-section").hidden = true;
+    get("department-section").hidden = true;
+    get("audit-section").hidden = true;
     get("branch-rows").replaceChildren();
     get("login-view").hidden = false;
     get("app-view").hidden = true;
@@ -51,6 +55,8 @@
   function showPortal(user) {
     currentUser = user;
     get("management-section").hidden = user.role !== "super_admin";
+    get("department-section").hidden = user.role !== "super_admin";
+    get("audit-section").hidden = user.role !== "super_admin";
     get("login-view").hidden = true;
     get("app-view").hidden = false;
     const name = String(user.display_name || user.username || "Account");
@@ -192,6 +198,7 @@
       await apiRequest("zones.php", writeOptions({ code, name }));
       get("zone-form").reset();
       await loadZones();
+      await loadAudit();
       message("zone-message", "Zone saved in MySQL and audited.");
     } catch (error) {
       message("zone-message", error.message, true);
@@ -223,9 +230,123 @@
       await loadBranches();
       get("branch-record").value = String(result.branch.id);
       fillBranchEditor();
+      await loadAudit();
       message("branch-save-message", "Branch saved in MySQL and audited.");
     } catch (error) {
       message("branch-save-message", error.message, true);
+    } finally {
+      button.disabled = false;
+    }
+  });
+
+  function renderDepartments() {
+    const tbody = get("departments-rows");
+    tbody.replaceChildren();
+    for (const item of departments) {
+      const tr = document.createElement("tr");
+      for (const value of [item.code, item.name, item.parent_id || "—"]) {
+        const td = document.createElement("td");
+        td.textContent = String(value);
+        tr.appendChild(td);
+      }
+      tbody.appendChild(tr);
+    }
+    message("departments-message", departments.length ? "" : "No approved departments have been recorded.");
+  }
+
+  function populateDepartmentEditor() {
+    const select = get("department-record");
+    const selected = select.value;
+    select.replaceChildren(new Option("Create new department", ""));
+    for (const item of departments) {
+      select.add(new Option(String(item.code) + " — " + String(item.name), String(item.id)));
+    }
+    select.value = departments.some((d) => String(d.id) === selected) ? selected : "";
+    fillDepartmentEditor();
+  }
+
+  function fillDepartmentEditor() {
+    const item = departments.find((d) => String(d.id) === get("department-record").value);
+    get("department-code").value = item ? String(item.code) : "";
+    get("department-name").value = item ? String(item.name) : "";
+    get("department-save-button").textContent = item ? "Save department changes" : "Create department";
+    message("department-save-message", "");
+  }
+
+  async function loadDepartments() {
+    if (currentUser?.role !== "super_admin") return;
+    const button = get("departments-refresh-button");
+    button.disabled = true;
+    message("departments-message", "Loading...");
+    try {
+      const result = await apiRequest("departments.php");
+      if (!Array.isArray(result.departments)) throw new Error("Unexpected department response");
+      departments = result.departments;
+      renderDepartments();
+      populateDepartmentEditor();
+    } catch (error) {
+      departments = [];
+      get("departments-rows").replaceChildren();
+      message("departments-message", error.message, true);
+    } finally {
+      button.disabled = false;
+    }
+  }
+
+  async function loadAudit() {
+    if (currentUser?.role !== "super_admin") return;
+    const button = get("audit-refresh-button");
+    button.disabled = true;
+    message("audit-message", "Loading recent changes...");
+    try {
+      const result = await apiRequest("audit.php");
+      if (!Array.isArray(result.events)) throw new Error("Unexpected audit response");
+      const tbody = get("audit-rows");
+      tbody.replaceChildren();
+      for (const entry of result.events) {
+        const tr = document.createElement("tr");
+        for (const value of [entry.created_at, entry.actor_name, entry.action, entry.entity_type, entry.entity_id]) {
+          const td = document.createElement("td");
+          td.textContent = String(value ?? "—");
+          tr.appendChild(td);
+        }
+        tbody.appendChild(tr);
+      }
+      message("audit-message", result.events.length ? "" : "No organizational changes have been recorded.");
+    } catch (error) {
+      get("audit-rows").replaceChildren();
+      message("audit-message", error.message, true);
+    } finally {
+      button.disabled = false;
+    }
+  }
+
+  get("department-record").addEventListener("change", fillDepartmentEditor);
+  get("departments-refresh-button").addEventListener("click", loadDepartments);
+  get("audit-refresh-button").addEventListener("click", loadAudit);
+
+  get("department-form").addEventListener("submit", async (event) => {
+    event.preventDefault();
+    if (currentUser?.role !== "super_admin") return;
+    const button = get("department-save-button");
+    button.disabled = true;
+    message("department-save-message", "Saving...");
+    try {
+      const selectedId = get("department-record").value;
+      const data = {
+        action: selectedId ? "update" : "create",
+        code: get("department-code").value.trim(),
+        name: get("department-name").value.trim()
+      };
+      if (selectedId) data.id = Number(selectedId);
+      const result = await apiRequest("departments.php", writeOptions(data));
+      await loadDepartments();
+      get("department-record").value = String(result.department.id);
+      fillDepartmentEditor();
+      await loadAudit();
+      message("department-save-message", "Department saved and logged in MySQL.");
+    } catch (error) {
+      message("department-save-message", error.message, true);
     } finally {
       button.disabled = false;
     }
@@ -250,7 +371,11 @@
       if (!result.user || !csrfToken) throw new Error("Unexpected sign-in response");
       showPortal(result.user);
       await loadBranches();
-      if (currentUser?.role === "super_admin") await loadZones();
+      if (currentUser?.role === "super_admin") {
+        await loadZones();
+        await loadDepartments();
+        await loadAudit();
+      }
     } catch (error) {
       message("login-message", error.message, true);
     } finally {
@@ -287,7 +412,11 @@
       csrfToken = String(result.csrf_token || "");
       showPortal(result.user);
       await loadBranches();
-      if (currentUser?.role === "super_admin") await loadZones();
+      if (currentUser?.role === "super_admin") {
+        await loadZones();
+        await loadDepartments();
+        await loadAudit();
+      }
     } catch (error) {
       showLogin();
       if (error.status === 401) {
