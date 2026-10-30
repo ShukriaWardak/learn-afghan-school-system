@@ -35,11 +35,11 @@ Login failures are stored in `login_attempts` for basic throttling. Remove old l
 - Use a dedicated **local development** MySQL account with only the privileges needed by these endpoints and setup (not MySQL root). One example for an *authorized local database administrator* to adapt in phpMyAdmin's SQL tab (choose your own strong password; do not publish it):
 
 ```sql
-CREATE USER 'learn_app'@'localhost' IDENTIFIED BY 'CHOOSE_A_UNIQUE_LOCAL_PASSWORD';
-GRANT SELECT, INSERT ON learn_afghan.* TO 'learn_app'@'localhost';
+CREATE USER 'learn_app'@'127.0.0.1' IDENTIFIED BY 'CHOOSE_A_UNIQUE_LOCAL_PASSWORD';
+GRANT SELECT, INSERT ON learn_afghan.* TO 'learn_app'@'127.0.0.1';
 ```
 
-- Copy `backend/config.example.php` to `backend/config.local.php`, with the local MySQL username, password and database `learn_afghan`. `config.local.php` is Git-ignored; **never commit it**. If MySQL authenticates 127.0.0.1 differently from localhost, create/grant a matching host account or configure the database host accordingly.
+- Copy `backend/config.example.php` to `backend/config.local.php`, with the local MySQL username, password and database `learn_afghan`. `config.local.php` is Git-ignored; **never commit it**. The `config.example.php` host is `127.0.0.1`, matching the example account above. If you instead choose `localhost`, configure the corresponding database host and grants consistently.
 - The first local super admin must be authorized by the team. The optional CLI-only script refuses HTTP requests and refuses to create a new account if *any* user exists:
 
 ```powershell
