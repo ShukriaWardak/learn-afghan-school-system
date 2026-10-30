@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="referrer" content="same-origin">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; connect-src 'self'; img-src 'self' data:; object-src 'none'; base-uri 'none'; form-action 'self'">
+  <title>LEARN Afghan | Secure Branch Portal</title>
+  <link rel="stylesheet" href="portal.css">
+  <script src="portal.js" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to main content</a>
+  <header class="site-header">
+    <div class="site-brand"><span class="brand-symbol" aria-hidden="true">LA</span>
+      <div><strong>LEARN AFGHAN</strong><span>Central Database</span></div>
+    </div>
+    <span class="environment">PHP / MySQL · Local test</span>
+  </header>
+
+  <main id="main" class="container">
+    <section id="login-panel" class="login-card" aria-labelledby="login-heading">
+      <p class="eyebrow">AUTHORIZED ACCESS</p>
+      <h1 id="login-heading">Sign in</h1>
+      <p class="intro">Use an authorized LEARN Afghan account. This page connects to the PHP backend, not the browser demo.</p>
+      <form id="login-form">
+        <label for="username">Username</label>
+        <input id="username" name="username" type="text" maxlength="100" autocomplete="username" required>
+        <label for="password">Password</label>
+        <input id="password" name="password" type="password" autocomplete="current-password" required>
+        <button id="login-button" type="submit">Sign in</button>
+      </form>
+      <p id="login-message" class="message" role="alert" aria-live="polite"></p>
+    </section>
+
+    <section id="workspace" hidden aria-labelledby="workspace-heading">
+      <div class="page-heading">
+        <div><p class="eyebrow">SECURE WORKSPACE</p><h1 id="workspace-heading">Branch directory</h1>
+          <p id="welcome" class="intro"></p></div>
+        <button id="logout-button" class="secondary" type="button">Sign out</button>
+      </div>
+      <div class="summary">
+        <div><span class="summary-label">Branches available to your account</span>
+          <strong id="branch-count">—</strong></div>
+        <span class="read-only">Read-only · Server data</span>
+      </div>
+      <section class="directory" aria-label="Branch records">
+        <div class="directory-toolbar">
+          <label for="branch-search">Search visible branches</label>
+          <div class="search-actions"><input id="branch-search" type="search" placeholder="Name, code, or zone">
+            <button id="refresh-button" class="secondary" type="button">Refresh</button></div>
+        </div>
+        <p id="workspace-message" class="message" role="status" aria-live="polite"></p>
+        <div class="table-scroll">
+          <table>
+            <caption>Branches returned by your authorized PHP API session</caption>
+            <thead><tr><th scope="col">Code</th><th scope="col">Branch</th><th scope="col">Zone</th><th scope="col">Location</th><th scope="col">Status</th></tr></thead>
+            <tbody id="branch-rows"><tr><td colspan="5">Loading branches…</td></tr></tbody>
+          </table>
+        </div>
+      </section>
+    </section>
+  </main>
+  <footer>Development only. Do not enter confidential student or staff records until security review and deployment approval.</footer>
+</body>
+</html>
