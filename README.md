@@ -1,6 +1,6 @@
 # LEARN Afghan — Central Administration
 
-This development branch (`feature/live-admin-integration`, draft PR #1) connects the administrative dashboard to PHP/MySQL. It is not merged into `main` and has not passed end-to-end XAMPP testing.
+This development branch (`feature/student-registry`, draft PR #4) adds the student registry to the PHP/MySQL administrative dashboard in draft PR #1. It is not merged into `main` and has not passed the team's end-to-end XAMPP testing.
 
 ## Current progress
 
@@ -17,7 +17,8 @@ This development branch (`feature/live-admin-integration`, draft PR #1) connects
 | Departments | Super-admin directory, create and rename; transactional audit events | Uses existing departments table; parent assignments preserved |
 | Teachers / Staff | Scoped directories, search/status filters, super-admin create/edit/inactivate, stale-edit protection | Requires migration 003; personnel records do not create login accounts |
 | Branch admins | Super-admin read-only directory of branch-admin accounts | Account provisioning/editing still pending |
-| Other modules | Planning screens | Students, finance, health and approvals are not implemented |
+| Students | Scoped directory, code/name/grade search, branch/status filters, super-admin registration/editing, conflict recovery and audit logging | Requires migration 004; automated API and browser tests are included; XAMPP verification pending |
+| Other modules | Planning screens | Finance, health and approvals are not implemented |
 | Operations | Setup instructions and syntax-check workflow | PDF/Excel reporting, backups/recovery and production readiness remain |
 
 The proposal targets **3 zones and 25 branches**. These are planned scope, not verified live counts. No official zone/branch records or default accounts are seeded. The dashboard's live counts reflect only records accessible to the signed-in account.
@@ -34,8 +35,8 @@ If there are local edits, commit or otherwise preserve them before switching bra
 
 ```bash
 git fetch origin
-git switch feature/live-admin-integration
-git pull --ff-only origin feature/live-admin-integration
+git switch feature/student-registry
+git pull --ff-only origin feature/student-registry
 ```
 
 1. Start Apache and MySQL in XAMPP (PHP 8.1+).
@@ -55,6 +56,14 @@ Zone and branch administrators can read personnel only within their assigned zon
 
 Run `node tests/registry.cjs` for isolated directory checks. The GitHub Actions integration job creates a disposable MySQL database and checks creation, editing, duplicate/invalid input, stale edits, CSRF, role boundaries, audit events and logout through the PHP APIs. `tests/setup-integration.php` refuses an existing database and is for disposable CI only. Check the workflow result for the exact commit before treating integration tests as passed.
 
+### Students
+
+Import `database/004_students.sql` into the existing `learn_afghan` database after migrations 002 and 003. Then sign in and open **Students** in the People navigation group. Super administrators can register a student with a unique code, full name, branch, grade/level and active/inactive/graduated status. The student code remains fixed after registration. Zone and branch administrators have read-only access within their assigned scope; department users are denied.
+
+Search, branch and status filters operate on up to 1,000 loaded authorized records. Refresh retrieves newer changes. Editing sends the version that was loaded; conflicting changes leave the form open with its unsaved input and an explicit **Close and refresh latest records** action. No delete or public self-registration is implemented. Student data is cleared from the directory on sign-out/session expiry and is never written to localStorage.
+
+See [database/STUDENTS_SETUP.md](database/STUDENTS_SETUP.md) for a short XAMPP acceptance test. `node tests/students.cjs` checks isolated directory behavior. CI adds real MySQL/PHP student API tests, including audit-failure rollback, followed by Playwright browser tests for registration, reload, editing, conflicts, filters and role limits. These CI checks use a disposable database and synthetic records; do not run the fixture/fault-injection scripts against a working installation.
+
 Opening `index.html` directly via `file://` shows a separately labelled browser-only demo. Demo edits use localStorage and do not populate MySQL. GitHub displays source code; it is not a running PHP/MySQL service.
 
 ## Local verification checklist
@@ -67,8 +76,9 @@ Opening `index.html` directly via `file://` shows a separately labelled browser-
 - Search and zone filters match CSV rows; no-match exports contain the header only.
 - User and audit pages remain restricted to super admins.
 
-JavaScript syntax and isolated CSV behavior were checked on 30 October 2026. PHP/MySQL integration and browser tests have **not** been completed in this session. Do not confuse code availability with a tested deployment.
+Check the GitHub Actions result for the exact commit for JavaScript/PHP syntax, isolated behavior, MySQL/PHP integration and browser-test results. The team's XAMPP installation and production deployment remain unverified. Do not confuse an automated CI pass with a tested deployment.
 
 ## Project scope and remaining inputs
 
 The agreed direction is a centralized administrative database for three zones and 25 branches. Official names/codes, department fields, permission rules and reporting formats still need organizational confirmation. Production hosting, security review, backups and recovery remain unfinished. Use disposable test data until those requirements are met.
+

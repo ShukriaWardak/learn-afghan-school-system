@@ -15,6 +15,7 @@ jobs:
           node --check app.js
           node --check live.js
           node --check registry.js
+          node --check students.js
       - name: PHP syntax
         run: |
           find backend -type f -name '*.php' -print0 | xargs -0 -n1 php -l
@@ -23,6 +24,7 @@ jobs:
           node tests/branch-export.cjs
           node tests/live-reports.cjs
           node tests/registry.cjs
+          node tests/students.cjs
       - name: Required files
         run: |
           test -f database/schema.sql
@@ -31,6 +33,7 @@ jobs:
           test -f backend/api/zone_create.php
           test -f backend/api/audit.php
           test -f database/003_personnel.sql
+          test -f database/004_students.sql
   integration:
     runs-on: ubuntu-latest
     services:
@@ -53,12 +56,29 @@ jobs:
           LEARN_INTEGRATION_TEST: '1'
           MYSQL_TEST_PASSWORD: disposable-ci-only
         run: php tests/setup-integration.php
-      - name: Test authenticated personnel and department APIs
+      - name: Test authenticated personnel, department and student APIs
+        env:
+          LEARN_INTEGRATION_TEST: '1'
+          MYSQL_TEST_PASSWORD: disposable-ci-only
         run: |
           php -S 127.0.0.1:8099 -t . > /tmp/learn-php-test.log 2>&1 &
           server_pid=$!
           trap 'kill "$server_pid"' EXIT
           node tests/personnel-integration.cjs
+          node tests/students-integration.cjs
+      - name: Install browser test dependencies
+        run: |
+          npm install --no-save --package-lock=false playwright@1.62.1
+          npx playwright install --with-deps chromium
+      - name: Test student browser interactions
+        env:
+          LEARN_INTEGRATION_TEST: '1'
+        run: |
+          php -S 127.0.0.1:8099 -t . > /tmp/learn-php-test.log 2>&1 &
+          server_pid=$!
+          trap 'kill "$server_pid"' EXIT
+          node tests/students-browser.cjs
       - name: Server diagnostics
         if: failure()
         run: cat /tmp/learn-php-test.log || true
+

@@ -17,5 +17,11 @@ switch ($user['role']) {
 $sql='SELECT s.id,s.student_code,s.full_name,s.branch_id,s.grade_level,s.status,s.version,b.name AS branch_name FROM students s JOIN branches b ON b.id=s.branch_id';
 if ($where) $sql.=' WHERE '.implode(' AND ',$where);
 $sql.=' ORDER BY s.full_name,s.id LIMIT 1000';
-$stmt=$pdo->prepare($sql); $stmt->execute($params);
-respond(200,['students'=>$stmt->fetchAll(),'limit'=>1000]);
+try {
+ $stmt=$pdo->prepare($sql); $stmt->execute($params);
+ respond(200,['students'=>$stmt->fetchAll(),'limit'=>1000]);
+} catch (PDOException $e) {
+ error_log('LEARN student directory unavailable');
+ respond(503,['error'=>'Student directory unavailable. Verify database migration 004 is installed.']);
+}
+
