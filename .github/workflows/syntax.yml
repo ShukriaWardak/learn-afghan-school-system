@@ -71,6 +71,7 @@ jobs:
           node tests/setup-checks.cjs
           node tests/students-integration.cjs
           node tests/password-reset.cjs
+          node tests/first-admin.cjs
       - name: Install browser test dependencies
         run: |
           npm install --no-save --package-lock=false playwright@1.62.1

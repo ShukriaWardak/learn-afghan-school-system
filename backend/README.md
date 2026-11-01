@@ -51,9 +51,15 @@ Writes use SQL transactions so audit history and actual changes succeed together
 The first account must be approved and enrolled from the server command line, not through
 any public web route. Run `php backend/cli/first_admin.php` with local process environment
 variables `LEARN_FIRST_ADMIN_USERNAME`, `LEARN_FIRST_ADMIN_NAME` and
-`LEARN_FIRST_ADMIN_PASSWORD` (>=12 bytes). There is deliberately no default password.
-The helper refuses to run if a super admin already exists. Protect environment variables,
-clear them promptly, and never commit any real credentials.
+`LEARN_FIRST_ADMIN_PASSWORD` (12-72 bytes). There is deliberately no default password.
+The helper checks the bootstrap lock before starting a transaction and records an audit
+event together with the first account. Repeating it with the same valid active super-admin
+credentials succeeds without changing records; an existing administrator with different
+credentials, an inactive administrator or a username already used by another role is refused.
+`LEARN_FIRST_ADMIN_CONFIG` can specify an explicit local configuration-file path for a
+launcher; otherwise it uses `backend/config.local.php`. Connection/configuration failures
+return a nonzero CLI status. Protect environment variables, clear them promptly, and never
+commit any real credentials. HTTP requests to the helper return 404.
 
 ### Current limitations (not production ready)
 
