@@ -11,6 +11,8 @@ On `feature/live-admin-integration`, the root `index.html` uses `live.js` to con
 6. Open the project from `http://localhost/...`, not by opening the HTML directly if testing PHP APIs.
 
 ## Authentication endpoints
+For an existing local account that cannot sign in, see [local login recovery](../LOCAL_LOGIN_RECOVERY.md). The root `reset-local-login.php` helper lists website account names from the command line and resets one selected active account using a PHP-generated password hash. It records an audit event and preserves the account's role and status.
+
 - GET `backend/api/csrf.php`: creates session and returns CSRF token.
 - POST `backend/api/login.php`: JSON `{"username":"...","password":"..."}` with `X-CSRF-Token` header and same-origin request; responds with user data and fresh CSRF token.
 - GET `backend/api/session.php`: returns current account or HTTP 401.
@@ -64,3 +66,4 @@ clear them promptly, and never commit any real credentials.
   input validation tests and staging deployment with HTTPS before using confidential data.
 - Dedicated **public** production hosting must restrict access to `backend/config.local.php`,
   SQL dumps and CLI files, keep secrets outside the public web root, and enforce trusted-host rules.
+

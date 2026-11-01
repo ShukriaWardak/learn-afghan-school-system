@@ -19,6 +19,7 @@ jobs:
       - name: PHP syntax
         run: |
           php -l check-setup.php
+          php -l reset-local-login.php
           find backend -type f -name '*.php' -print0 | xargs -0 -n1 php -l
       - name: Report and CSV behavior
         run: |
@@ -69,6 +70,7 @@ jobs:
           node tests/personnel-integration.cjs
           node tests/setup-checks.cjs
           node tests/students-integration.cjs
+          node tests/password-reset.cjs
       - name: Install browser test dependencies
         run: |
           npm install --no-save --package-lock=false playwright@1.62.1
