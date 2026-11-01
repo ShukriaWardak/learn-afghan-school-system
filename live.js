@@ -26,13 +26,14 @@ const Live = {
     root.innerHTML=html;
   },
   showError(message) {
-    this.showScreen('<section class="auth-card" role="alert"><h1>LEARN Afghan</h1><h2>Server setup required</h2><p>'+escapeHtml(message)+'</p><p>The connected database must be configured and available. No demonstration records have been loaded as live records.</p><button type="button" class="ghost-btn" id="retryServer">Retry connection</button></section>');
+    this.showScreen('<section class="auth-card" role="alert"><h1>LEARN Afghan</h1><h2>Server setup required</h2><p>'+escapeHtml(message)+'</p><p>The connected database must be configured and available. No demonstration records have been loaded as live records.</p><p><a class="setup-link" href="check-setup.php">Check local setup</a></p><button type="button" class="ghost-btn" id="retryServer">Retry connection</button></section>');
     document.querySelector("#retryServer").onclick=()=>this.init();
   },
   showLogin() {
     Students.reset();
-    this.active=false;this.users=[];this.events=[];
-    this.showScreen('<form class="auth-card" id="loginForm" autocomplete="on"><div class="auth-logo">▤</div><span class="eyebrow">LEARN AFGHAN · CENTRAL DATABASE</span><h1>Sign in</h1><p class="muted">Use your approved administrative account. Demo data is not used for authentication.</p><label for="loginUser">Username</label><input class="field" id="loginUser" name="username" autocomplete="username" maxlength="100" required><label for="loginPassword">Password</label><input class="field" id="loginPassword" type="password" name="password" autocomplete="current-password" required><p id="loginError" class="auth-error" role="alert" aria-live="polite"></p><button type="submit" class="primary-btn" id="submitLogin">Sign in securely</button><small>This system is in development. Do not use it with real confidential records until deployment is approved.</small></form>');
+    this.active=false;this.user=null;this.csrf=null;this.users=[];this.events=[];
+    document.querySelector("#main").replaceChildren();
+    this.showScreen('<form class="auth-card" id="loginForm" autocomplete="on"><div class="auth-logo">▤</div><span class="eyebrow">LEARN AFGHAN · CENTRAL DATABASE</span><h1>Sign in</h1><p class="muted">Use your approved administrative account. Demo data is not used for authentication.</p><label for="loginUser">Username</label><input class="field" id="loginUser" name="username" autocomplete="username" maxlength="100" required><label for="loginPassword">Password</label><input class="field" id="loginPassword" type="password" name="password" autocomplete="current-password" required><p id="loginError" class="auth-error" role="alert" aria-live="polite"></p><button type="submit" class="primary-btn" id="submitLogin">Sign in securely</button><p><a class="setup-link" href="check-setup.php">Check local setup</a></p><small>This system is in development. Do not use it with real confidential records until deployment is approved.</small></form>');
     document.querySelector("#loginForm").onsubmit=async e=>{
       e.preventDefault();
       const form=e.currentTarget, btn=document.querySelector("#submitLogin");

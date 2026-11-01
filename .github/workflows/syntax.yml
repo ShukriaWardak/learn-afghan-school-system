@@ -18,6 +18,7 @@ jobs:
           node --check students.js
       - name: PHP syntax
         run: |
+          php -l check-setup.php
           find backend -type f -name '*.php' -print0 | xargs -0 -n1 php -l
       - name: Report and CSV behavior
         run: |
@@ -34,6 +35,7 @@ jobs:
           test -f backend/api/audit.php
           test -f database/003_personnel.sql
           test -f database/004_students.sql
+          test -f check-setup.php
   integration:
     runs-on: ubuntu-latest
     services:
@@ -65,6 +67,7 @@ jobs:
           server_pid=$!
           trap 'kill "$server_pid"' EXIT
           node tests/personnel-integration.cjs
+          node tests/setup-checks.cjs
           node tests/students-integration.cjs
       - name: Install browser test dependencies
         run: |

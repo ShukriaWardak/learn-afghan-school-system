@@ -9,6 +9,7 @@ This development branch (`feature/student-registry`, draft PR #4) adds the stude
 | Interface | Dashboard, navigation, search and zone filters | Browser interaction testing pending |
 | Database foundation | zones, branches, departments, users, audit_events, login_attempts | Verify both SQL imports in local MySQL |
 | Authentication | Sign-in, sign-out, sessions, CSRF and login throttling | Local login and role-boundary tests pending |
+| Local setup | Browser/CLI checks for PHP, driver, configuration, connection, tables/columns and administrator readiness; readable sign-in/setup cards | Read-only and restricted to localhost for browser access; see LOCAL_SETUP.md |
 | Zone / branch administration | Scoped listings; super-admin zone/branch creation and branch editing | Verify database persistence and audit rows |
 | Users | Super-admin read-only directory, first 200 accounts | Invitations, editing, reset and MFA are not implemented |
 | Audit | Transactional logs for zone/branch writes; recent 100 events | Verify against a running database |
@@ -45,6 +46,8 @@ git pull --ff-only origin feature/student-registry
 4. Use an authorized local test account. For an empty installation, follow the CLI first-admin instructions in [backend/README.md](backend/README.md).
 5. If the folder is named `learn-afghan-school-system`, open **http://localhost/learn-afghan-school-system/index.html**. Adjust the folder name if necessary.
 6. Sign in. With an empty database, zero zones/branches is expected. Add a test zone, add a test branch, edit it, reload, and verify audit history using disposable local data.
+
+If setup or login is blocked, open `check-setup.php` using the same folder URL as `index.html`. It shows the project directory being served and identifies missing setup steps, without displaying credentials or changing records. It can run on PHP 8.0 to explain the app's PHP 8.1 requirement. See [LOCAL_SETUP.md](LOCAL_SETUP.md) for Windows/macOS instructions. An existing administrator detected by this page still needs to be tested with the correct sign-in credentials.
 
 ### Departments, teachers and staff
 

@@ -8,6 +8,16 @@ const waitFor = async predicate => {
   for (let i=0; i<60; i++) { if (await predicate()) return; await new Promise(resolve => setTimeout(resolve,100)); }
   throw new Error('Browser condition timed out');
 };
+const contrast = (foreground, background) => {
+  const luminance = color => {
+    const values = color.match(/[\d.]+/g).slice(0,3).map(Number).map(value => {
+      const channel=value/255; return channel <= 0.04045 ? channel/12.92 : ((channel+0.055)/1.055)**2.4;
+    });
+    return values[0]*0.2126+values[1]*0.7152+values[2]*0.0722;
+  };
+  const a=luminance(foreground), b=luminance(background);
+  return (Math.max(a,b)+0.05)/(Math.min(a,b)+0.05);
+};
 (async () => {
   for (let i=0; i<40; i++) {
     try { await fetch(base+'backend/api/csrf.php'); break; }
@@ -17,6 +27,14 @@ const waitFor = async predicate => {
   const errors = [];
   const login = async (page, username) => {
     await page.goto(base+'index.html');
+    await page.locator('#loginForm').waitFor();
+    for (const selector of ['.auth-card h1','.auth-card label','.auth-card .muted','.auth-card small','#loginError','#loginUser','#loginPassword']) {
+      const colors = await page.locator(selector).first().evaluate(element => ({
+        foreground:getComputedStyle(element).color,
+        background:getComputedStyle(element.tagName === 'INPUT' ? element : element.closest('.auth-card')).backgroundColor
+      }));
+      assert.ok(contrast(colors.foreground,colors.background)>=4.5,'Readable contrast for '+selector);
+    }
     await page.locator('#loginUser').fill(username);
     await page.locator('#loginPassword').fill(password);
     await page.locator('#submitLogin').click();
@@ -30,6 +48,15 @@ const waitFor = async predicate => {
     const context = await browser.newContext();
     const page = await context.newPage();
     page.on('pageerror', error => errors.push(error.message));
+    await page.route('**/backend/api/session.php', route => route.fulfill({status:503,contentType:'application/json',body:JSON.stringify({error:'Database is not configured.'})}),{times:1});
+    await page.goto(base+'index.html');
+    await page.getByRole('heading',{name:'Server setup required'}).waitFor();
+    const setupColors = await page.locator('.auth-card h2').evaluate(element => ({foreground:getComputedStyle(element).color,background:getComputedStyle(element.closest('.auth-card')).backgroundColor}));
+    assert.ok(contrast(setupColors.foreground,setupColors.background)>=4.5);
+    await page.getByRole('link',{name:'Check local setup'}).click();
+    await page.getByRole('heading',{name:'Check your setup'}).waitFor();
+    assert.equal(await page.locator('[data-status="pass"]').count(),13);
+    assert.equal(await page.locator('[data-status="fail"]').count(),0);
     await login(page,'test_super'); await directory(page);
     assert.match(await page.locator('#studentsCount').textContent(), /3 of 3/);
     await page.locator('#studentsSearch').fill('ST_002');
@@ -99,6 +126,7 @@ const waitFor = async predicate => {
     assert.equal(await page.evaluate(() => Students.rows.length),0);
     assert.equal(await page.evaluate(() => Students.branches.length),0);
     assert.equal(await page.locator('dialog').count(),0);
+    assert.equal(await page.locator('#main').textContent(),'');
     await context.close();
 
     for (const username of ['test_zone','test_branch','test_department']) {
@@ -118,6 +146,6 @@ const waitFor = async predicate => {
       await scopedContext.close();
     }
     assert.deepEqual(errors,[]);
-    console.log('PASS: browser sign-in, filtering, required fields, escaped names, create/reload/edit, conflict recovery, dialog keyboard access, session expiry and role-limited UI');
+    console.log('PASS: setup page, sign-in text contrast, filtering, required fields, escaped names, create/reload/edit, conflict recovery, dialog keyboard access, session expiry and role-limited UI');
   } finally { await browser.close(); }
 })().catch(error => {console.error(error);process.exit(1);});
