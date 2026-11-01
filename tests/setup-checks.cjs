@@ -3,6 +3,7 @@ const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
 const assert = require('node:assert/strict');
+const http = require('node:http');
 const {execFileSync} = require('node:child_process');
 if (process.env.LEARN_INTEGRATION_TEST !== '1') throw new Error('Use only with the disposable CI fixture');
 const root = path.join(__dirname,'..');
@@ -20,6 +21,16 @@ const run = (args = []) => {
   return JSON.parse(raw);
 };
 const check = (result,id) => result.checks.find(item => item.id === id);
+// Use node:http so the custom Host header is sent unchanged on every Node version.
+const untrustedHostStatus = () => new Promise((resolve,reject) => {
+  const request = http.get('http://127.0.0.1:8099/check-setup.php',{headers:{Host:'untrusted.example'}},response => {
+    response.resume();
+    response.on('end',() => resolve(response.statusCode));
+    response.on('error',reject);
+  });
+  request.on('error',reject);
+  request.setTimeout(5000,() => request.destroy(new Error('Host check timed out')));
+});
 const php = code => execFileSync('php',['-r',code],{env,encoding:'utf8'});
 const snapshot = () => php(`
   $c=require getenv('LEARN_TEST_CONFIG_PATH');
@@ -93,7 +104,7 @@ let temporaryDatabaseCreated = false;
     assert.ok(!html.includes(process.env.MYSQL_TEST_PASSWORD));
     assert.equal((html.match(/data-status="pass"/g)||[]).length,13);
     assert.equal((await fetch('http://127.0.0.1:8099/check-setup.php',{method:'POST'})).status,405);
-    assert.equal((await fetch('http://127.0.0.1:8099/check-setup.php',{headers:{Host:'untrusted.example'}})).status,403);
+    assert.equal(await untrustedHostStatus(),403);
     assert.equal(snapshot(),before);
     console.log('PASS: local setup checks, missing/malformed config, driver failure, connection errors, missing/old schema, admin states, credential redaction and read-only HTTP/CLI behavior');
   } finally {
