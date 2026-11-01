@@ -15,3 +15,14 @@
 /* Native dialog keeps keyboard focus inside personnel forms. */
 dialog.modal { max-height: calc(100dvh - 32px); overflow-y: auto; width: min(540px, calc(100vw - 32px)); }
 dialog.modal::backdrop { background: #10284998; }
+
+/* Keep the white sign-in/setup card readable within the dark dashboard theme. */
+.auth-card{--ink:#173456;--muted:#526680;color:#173456;background:#fff}
+.auth-card h1,.auth-card h2,.auth-card label{color:#173456}
+.auth-card p,.auth-card .muted,.auth-card small{color:#526680}
+.auth-card .eyebrow{color:#1e5a95}
+.auth-card .field{background:#f3f7fc;color:#173456;border:1px solid #8ba6c4}
+.auth-card .field:focus{outline:2px solid #1b64ae;outline-offset:2px}
+.auth-card .auth-error{color:#a51e32}
+.auth-card .setup-link{color:#175a9e;font-weight:700}
+

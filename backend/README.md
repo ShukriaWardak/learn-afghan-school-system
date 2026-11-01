@@ -11,6 +11,8 @@ On `feature/live-admin-integration`, the root `index.html` uses `live.js` to con
 6. Open the project from `http://localhost/...`, not by opening the HTML directly if testing PHP APIs.
 
 ## Authentication endpoints
+For an existing local account that cannot sign in, see [local login recovery](../LOCAL_LOGIN_RECOVERY.md). The root `reset-local-login.php` helper lists website account names from the command line and resets one selected active account using a PHP-generated password hash. It records an audit event and preserves the account's role and status.
+
 - GET `backend/api/csrf.php`: creates session and returns CSRF token.
 - POST `backend/api/login.php`: JSON `{"username":"...","password":"..."}` with `X-CSRF-Token` header and same-origin request; responds with user data and fresh CSRF token.
 - GET `backend/api/session.php`: returns current account or HTTP 401.
@@ -49,9 +51,15 @@ Writes use SQL transactions so audit history and actual changes succeed together
 The first account must be approved and enrolled from the server command line, not through
 any public web route. Run `php backend/cli/first_admin.php` with local process environment
 variables `LEARN_FIRST_ADMIN_USERNAME`, `LEARN_FIRST_ADMIN_NAME` and
-`LEARN_FIRST_ADMIN_PASSWORD` (>=12 bytes). There is deliberately no default password.
-The helper refuses to run if a super admin already exists. Protect environment variables,
-clear them promptly, and never commit any real credentials.
+`LEARN_FIRST_ADMIN_PASSWORD` (12-72 bytes). There is deliberately no default password.
+The helper checks the bootstrap lock before starting a transaction and records an audit
+event together with the first account. Repeating it with the same valid active super-admin
+credentials succeeds without changing records; an existing administrator with different
+credentials, an inactive administrator or a username already used by another role is refused.
+`LEARN_FIRST_ADMIN_CONFIG` can specify an explicit local configuration-file path for a
+launcher; otherwise it uses `backend/config.local.php`. Connection/configuration failures
+return a nonzero CLI status. Protect environment variables, clear them promptly, and never
+commit any real credentials. HTTP requests to the helper return 404.
 
 ### Current limitations (not production ready)
 
@@ -64,3 +72,4 @@ clear them promptly, and never commit any real credentials.
   input validation tests and staging deployment with HTTPS before using confidential data.
 - Dedicated **public** production hosting must restrict access to `backend/config.local.php`,
   SQL dumps and CLI files, keep secrets outside the public web root, and enforce trusted-host rules.
+

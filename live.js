@@ -26,12 +26,14 @@ const Live = {
     root.innerHTML=html;
   },
   showError(message) {
-    this.showScreen('<section class="auth-card" role="alert"><h1>LEARN Afghan</h1><h2>Server setup required</h2><p>'+escapeHtml(message)+'</p><p>The connected database must be configured and available. No demonstration records have been loaded as live records.</p><button type="button" class="ghost-btn" id="retryServer">Retry connection</button></section>');
+    this.showScreen('<section class="auth-card" role="alert"><h1>LEARN Afghan</h1><h2>Server setup required</h2><p>'+escapeHtml(message)+'</p><p>The connected database must be configured and available. No demonstration records have been loaded as live records.</p><p><a class="setup-link" href="check-setup.php">Check local setup</a></p><button type="button" class="ghost-btn" id="retryServer">Retry connection</button></section>');
     document.querySelector("#retryServer").onclick=()=>this.init();
   },
   showLogin() {
-    this.active=false;this.users=[];this.events=[];
-    this.showScreen('<form class="auth-card" id="loginForm" autocomplete="on"><div class="auth-logo">▤</div><span class="eyebrow">LEARN AFGHAN · CENTRAL DATABASE</span><h1>Sign in</h1><p class="muted">Use your approved administrative account. Demo data is not used for authentication.</p><label for="loginUser">Username</label><input class="field" id="loginUser" name="username" autocomplete="username" maxlength="100" required><label for="loginPassword">Password</label><input class="field" id="loginPassword" type="password" name="password" autocomplete="current-password" required><p id="loginError" class="auth-error" role="alert" aria-live="polite"></p><button type="submit" class="primary-btn" id="submitLogin">Sign in securely</button><small>This system is in development. Do not use it with real confidential records until deployment is approved.</small></form>');
+    Students.reset();
+    this.active=false;this.user=null;this.csrf=null;this.users=[];this.events=[];
+    document.querySelector("#main").replaceChildren();
+    this.showScreen('<form class="auth-card" id="loginForm" autocomplete="on"><div class="auth-logo">▤</div><span class="eyebrow">LEARN AFGHAN · CENTRAL DATABASE</span><h1>Sign in</h1><p class="muted">Use your approved administrative account. Demo data is not used for authentication.</p><label for="loginUser">Username</label><input class="field" id="loginUser" name="username" autocomplete="username" maxlength="100" required><label for="loginPassword">Password</label><input class="field" id="loginPassword" type="password" name="password" autocomplete="current-password" required><p id="loginError" class="auth-error" role="alert" aria-live="polite"></p><button type="submit" class="primary-btn" id="submitLogin">Sign in securely</button><p><a class="setup-link" href="check-setup.php">Check local setup</a></p><small>This system is in development. Do not use it with real confidential records until deployment is approved.</small></form>');
     document.querySelector("#loginForm").onsubmit=async e=>{
       e.preventDefault();
       const form=e.currentTarget, btn=document.querySelector("#submitLogin");
@@ -92,6 +94,7 @@ const Live = {
     state.activity=[];
   },
   enter() {
+    Students.reset();
     document.querySelector("#authScreen")?.remove();
     document.documentElement.classList.remove("app-loading","auth-required");
     const display=this.user.display_name||this.user.username;
@@ -169,7 +172,7 @@ const Live = {
       +metric("Active branches",active,"●","Verified records")
       +metric("Assigned branch admins",assigned,"♙","Active accounts")+'</div>'
       +panel("Branch directory",rows.length?branchesTable(rows.slice(0,8)):'<div class="empty">No authorized branches are available. Ask an administrator to confirm zones and branch records.</div>','<button class="link-btn" data-go="branches">View branches →</button>')
-      +'<div class="note">Signed in as '+label+'. Teacher and staff directories are available in the sidebar. Financial, safeguarding, approval and backup modules are NOT live yet. Do not enter sensitive records until security testing and organizational approval are complete.</div>';
+      +'<div class="note">Signed in as '+label+'. Teacher, staff and student directories are available in the sidebar. Financial, safeguarding, approval and backup modules are NOT live yet. Do not enter sensitive records until security testing and organizational approval are complete.</div>';
   },
   zonesView() {
     return heading("Zones","Only zones authorized for your account are shown.",this.user.role==="super_admin"?'<button class="primary-btn" id="addZone">+ Add approved zone</button>':"")
@@ -232,3 +235,4 @@ const Live = {
     };
   }
 };
+
