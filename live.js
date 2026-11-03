@@ -23,6 +23,7 @@ const Live = {
     document.documentElement.classList.add("auth-required");
     let root=document.querySelector("#authScreen");
     if (!root) { root=document.createElement("div");root.id="authScreen";document.body.append(root); }
+    root.className="";
     root.innerHTML=html;
   },
   showError(message) {
@@ -33,7 +34,53 @@ const Live = {
     Students.reset();
     this.active=false;this.user=null;this.csrf=null;this.users=[];this.events=[];
     document.querySelector("#main").replaceChildren();
-    this.showScreen('<form class="auth-card" id="loginForm" autocomplete="on"><div class="auth-logo">▤</div><span class="eyebrow">LEARN AFGHAN · CENTRAL DATABASE</span><h1>Sign in</h1><p class="muted">Use your approved administrative account. Demo data is not used for authentication.</p><label for="loginUser">Username</label><input class="field" id="loginUser" name="username" autocomplete="username" maxlength="100" required><label for="loginPassword">Password</label><input class="field" id="loginPassword" type="password" name="password" autocomplete="current-password" required><p id="loginError" class="auth-error" role="alert" aria-live="polite"></p><button type="submit" class="primary-btn" id="submitLogin">Sign in securely</button><p><a class="setup-link" href="check-setup.php">Check local setup</a></p><small>This system is in development. Do not use it with real confidential records until deployment is approved.</small></form>');
+    this.showScreen(`<div class="login-shell">
+      <aside class="login-visual" aria-label="LEARN Afghan education">
+        <div class="login-visual-photo" aria-hidden="true"></div>
+        <div class="login-visual-copy">
+          <span class="login-accent" aria-hidden="true"></span>
+          <h2>Education continues.</h2>
+          <p>LEARN Afghan · School Management System</p>
+        </div>
+      </aside>
+      <section class="login-panel">
+        <div class="login-panel-content">
+          <img class="login-brand" src="assets/learn-afghan-logo.svg" width="170" height="170" alt="LEARN Afghan logo">
+          <h1 id="loginTitle">Welcome back</h1>
+          <p class="login-subtitle">Sign in to your LEARN Afghan account.</p>
+          <form class="login-form" id="loginForm" autocomplete="on" aria-labelledby="loginTitle">
+            <label for="loginUser">Username</label>
+            <div class="login-input-wrap">
+              <input class="login-field" id="loginUser" name="username" type="text" placeholder="Enter your username" autocomplete="username" maxlength="100" autocapitalize="none" spellcheck="false" required>
+              <svg class="login-input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="12" cy="8" r="3.5"/><path d="M5 21v-2a7 7 0 0 1 14 0v2"/></svg>
+            </div>
+            <label for="loginPassword">Password</label>
+            <div class="login-input-wrap has-toggle">
+              <input class="login-field" id="loginPassword" name="password" type="password" placeholder="Enter your password" autocomplete="current-password" required>
+              <button class="login-visibility" id="togglePassword" type="button" aria-label="Show password" aria-pressed="false">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 12s3.4-6 9.5-6 9.5 6 9.5 6-3.4 6-9.5 6S2.5 12 2.5 12Z"/><circle cx="12" cy="12" r="2.8"/></svg>
+              </button>
+            </div>
+            <p id="loginError" class="auth-error" role="alert" aria-live="polite"></p>
+            <button type="submit" class="login-submit" id="submitLogin">Sign in securely
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12h16m-7-7 7 7-7 7"/></svg>
+            </button>
+            <p class="login-trust"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true"><path d="M12 2 4.5 5v6c0 5.2 3 8.6 7.5 11 4.5-2.4 7.5-5.8 7.5-11V5L12 2Z"/></svg>Authorized staff access only.</p>
+            <p class="login-meta">Need help? <a class="setup-link" href="check-setup.php">Check local setup</a></p>
+            <small class="login-disclaimer">Development environment. Do not enter real confidential records until deployment is approved.</small>
+          </form>
+        </div>
+      </section>
+    </div>`);
+    document.querySelector("#authScreen").classList.add("auth-login-page");
+    const passwordField=document.querySelector("#loginPassword");
+    const passwordToggle=document.querySelector("#togglePassword");
+    passwordToggle.onclick=()=>{
+      const visible=passwordField.type==="password";
+      passwordField.type=visible?"text":"password";
+      passwordToggle.setAttribute("aria-pressed",String(visible));
+      passwordToggle.setAttribute("aria-label",visible?"Hide password":"Show password");
+    };
     document.querySelector("#loginForm").onsubmit=async e=>{
       e.preventDefault();
       const form=e.currentTarget, btn=document.querySelector("#submitLogin");

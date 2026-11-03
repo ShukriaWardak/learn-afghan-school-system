@@ -28,15 +28,29 @@ const contrast = (foreground, background) => {
   const login = async (page, username) => {
     await page.goto(base+'index.html');
     await page.locator('#loginForm').waitFor();
-    for (const selector of ['.auth-card h1','.auth-card label','.auth-card .muted','.auth-card small','#loginError','#loginUser','#loginPassword']) {
+    // The new split login must remain readable, keyboard-friendly and usable.
+    await page.getByRole('heading',{name:'Welcome back'}).waitFor();
+    assert.equal(await page.locator('#authScreen.auth-login-page').count(),1);
+    assert.equal(await page.locator('.login-visual').count(),1);
+    assert.equal(await page.locator('.login-panel').count(),1);
+    assert.ok(await page.locator('.login-brand').evaluate(async image => {
+      try { await image.decode(); return image.naturalWidth > 0; } catch { return false; }
+    }), 'Brand logo loads');
+    for (const selector of ['.login-panel h1','.login-form label','.login-subtitle','.login-disclaimer','#loginError','#loginUser','#loginPassword']) {
       const colors = await page.locator(selector).first().evaluate(element => ({
         foreground:getComputedStyle(element).color,
-        background:getComputedStyle(element.tagName === 'INPUT' ? element : element.closest('.auth-card')).backgroundColor
+        background:getComputedStyle(element.tagName === 'INPUT' ? element : element.closest('.login-panel')).backgroundColor
       }));
       assert.ok(contrast(colors.foreground,colors.background)>=4.5,'Readable contrast for '+selector);
     }
     await page.locator('#loginUser').fill(username);
     await page.locator('#loginPassword').fill(password);
+    const visibility = page.locator('#togglePassword');
+    await visibility.click();
+    assert.equal(await page.locator('#loginPassword').getAttribute('type'),'text');
+    assert.equal(await visibility.getAttribute('aria-pressed'),'true');
+    await visibility.click();
+    assert.equal(await page.locator('#loginPassword').getAttribute('type'),'password');
     await page.locator('#submitLogin').click();
     await page.locator('#authScreen').waitFor({state:'detached'});
   };

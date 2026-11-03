@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 220 220" role="img" aria-labelledby="logoTitle">
+<title id="logoTitle">LEARN Afghan</title>
+<rect width="220" height="220" rx="27" fill="#2a47c7"/>
+<g fill="none" stroke="#fff" stroke-linecap="round" stroke-linejoin="round">
+ <path d="M110 66c-17-13-36-14-57-9v52c22-5 42-3 57 10 15-13 35-15 57-10V57c-21-5-40-4-57 9Z" fill="#fff" stroke-width="2"/>
+ <path d="M110 67v52M48 60v54c23-5 43-3 62 9 19-12 39-14 62-9V60M44 66v53c28-6 49-1 66 10 17-11 38-16 66-10V66" stroke-width="2.4"/>
+ <path d="M110 66c-16-9-32-11-48-7v46c20-3 37 1 48 9M110 66c16-9 32-11 48-7v46c-20-3-37 1-48 9" stroke="#e7edff" stroke-width="1.6"/>
+</g>
+<g fill="#fff" font-family="Georgia,'Times New Roman',serif" text-anchor="middle">
+ <text x="110" y="166" font-size="32" letter-spacing="2">LEARN</text>
+ <text x="110" y="200" font-size="31" letter-spacing="1.5">AFGHAN</text>
+</g>
+</svg>
