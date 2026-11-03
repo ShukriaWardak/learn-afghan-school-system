@@ -31,7 +31,9 @@ const wait=async(fn)=>{
   await dialog.waitFor({state:'detached'});
   await wait(async()=> (await row.textContent()).includes('excused'));
   await page.locator('#attendanceAdd').click();
-  await dialog.locator('[name="student_id"]').selectOption({label:/ST_003/});
+  const optionValue=await dialog.locator('[name="student_id"] option').filter({hasText:'ST_003'}).getAttribute('value');
+  assert.ok(optionValue,'Synthetic active student is available');
+  await dialog.locator('[name="student_id"]').selectOption(optionValue);
   await dialog.locator('[name="status"]').selectOption('absent');
   await dialog.getByRole('button',{name:'Save attendance'}).click();
   await dialog.waitFor({state:'detached'});
