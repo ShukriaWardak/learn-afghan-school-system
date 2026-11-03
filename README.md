@@ -19,7 +19,8 @@ This development branch (`feature/student-registry`, draft PR #4) adds the stude
 | Teachers / Staff | Scoped directories, search/status filters, super-admin create/edit/inactivate, stale-edit protection | Requires migration 003; personnel records do not create login accounts |
 | Branch admins | Super-admin read-only directory of branch-admin accounts | Account provisioning/editing still pending |
 | Students | Scoped directory, code/name/grade search, branch/status filters, super-admin registration/editing, conflict recovery and audit logging | Requires migration 004; automated API and browser tests are included; XAMPP verification pending |
-| Student attendance | Daily read/write registry with role-scoped reads, super-admin audited updates, and date/status filters | Requires migration 005; CI and XAMPP confirmation pending |
+| Student attendance | Daily read/write registry with role-scoped reads, super-admin audited updates, and date/status filters | Requires migration 005; CI passed in PR #7; XAMPP confirmation pending |
+| Teacher/staff attendance | Daily role-scoped teacher and staff attendance with audited super-admin writes and conflict checks | Requires migration 006; CI and XAMPP confirmation pending |
 | Other modules | Planning screens | Finance, health and approvals are not implemented |
 | Operations | Setup instructions and syntax-check workflow | PDF/Excel reporting, backups/recovery and production readiness remain |
 
@@ -59,6 +60,10 @@ As a super administrator, open **Departments**, add an approved code/name, then 
 Zone and branch administrators can read personnel only within their assigned zone or branch. Department users have no personnel access yet. Only super administrators can write records or view the central department and branch-admin directories. Staff records are separate from login accounts, and this first registry does not include payroll, attendance, contact details or identity documents. The personnel and branch-admin directories display at most 1,000 records; filters search those loaded records.
 
 Run `node tests/registry.cjs` for isolated directory checks. The GitHub Actions integration job creates a disposable MySQL database and checks creation, editing, duplicate/invalid input, stale edits, CSRF, role boundaries, audit events and logout through the PHP APIs. `tests/setup-integration.php` refuses an existing database and is for disposable CI only. Check the workflow result for the exact commit before treating integration tests as passed.
+
+### Teacher and staff attendance
+
+Install `database/006_personnel_attendance.sql` after migration 005. It adds daily attendance for staff and teachers already registered in the personnel directory. Super administrators may create/correct entries; zone/branch accounts have scoped read-only access, and department accounts are denied. The interface distinguishes present, absent, late, and excused entries, with uniqueness, optimistic version checks, audit logs and no implicit absences. See [database/PERSONNEL_ATTENDANCE_SETUP.md](database/PERSONNEL_ATTENDANCE_SETUP.md) and validate in disposable CI and locally before introducing real data. Payroll remains unimplemented.
 
 ### Student attendance
 
