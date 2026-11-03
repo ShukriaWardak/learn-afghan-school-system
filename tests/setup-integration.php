@@ -4,7 +4,7 @@ if (PHP_SAPI !== 'cli' || getenv('LEARN_INTEGRATION_TEST') !== '1') exit(1);
 $config=['host'=>'127.0.0.1','port'=>'3306','database'=>'learn_afghan','username'=>'root','password'=>getenv('MYSQL_TEST_PASSWORD')];
 $pdo=new PDO('mysql:host=127.0.0.1;port=3306;charset=utf8mb4','root',$config['password'],[PDO::ATTR_ERRMODE=>PDO::ERRMODE_EXCEPTION]);
 if ($pdo->query("SHOW DATABASES LIKE 'learn_afghan'")->fetchColumn()) {fwrite(STDERR,"Refusing non-empty test installation\n");exit(1);}
-foreach (['schema.sql','002_login_attempts.sql','003_personnel.sql','004_students.sql','005_student_attendance.sql'] as $file) $pdo->exec(file_get_contents(__DIR__.'/../database/'.$file));
+foreach (['schema.sql','002_login_attempts.sql','003_personnel.sql','004_students.sql','005_student_attendance.sql','006_personnel_attendance.sql'] as $file) $pdo->exec(file_get_contents(__DIR__.'/../database/'.$file));
 $pdo->exec("INSERT INTO zones(code,name) VALUES('TEST_N','Test North'),('TEST_S','Test South')");
 $pdo->exec("INSERT INTO branches(zone_id,code,name) VALUES(1,'TEST_B1','Test Branch One'),(2,'TEST_B2','Test Branch Two'),(1,'TEST_B3','Test Branch Three')");
 $stmt=$pdo->prepare('INSERT INTO users(username,display_name,password_hash,role,zone_id,branch_id) VALUES(?,?,?,?,?,?)');
