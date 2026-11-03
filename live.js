@@ -31,7 +31,7 @@ const Live = {
     document.querySelector("#retryServer").onclick=()=>this.init();
   },
   showLogin() {
-    Students.reset();Attendance.reset();PersonnelAttendance.reset();
+    Students.reset();Attendance.reset();PersonnelAttendance.reset();Reports.reset();
     this.active=false;this.user=null;this.csrf=null;this.users=[];this.events=[];
     document.querySelector("#main").replaceChildren();
     this.showScreen(`<div class="login-shell">
@@ -141,7 +141,7 @@ const Live = {
     state.activity=[];
   },
   enter() {
-    Students.reset();Attendance.reset();PersonnelAttendance.reset();
+    Students.reset();Attendance.reset();PersonnelAttendance.reset();Reports.reset();
     document.querySelector("#authScreen")?.remove();
     document.documentElement.classList.remove("app-loading","auth-required");
     const display=this.user.display_name||this.user.username;
