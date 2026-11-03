@@ -1,0 +1,33 @@
+name: Windows setup helper syntax
+
+on:
+  pull_request:
+    paths:
+      - 'tools/setup-windows.ps1'
+      - 'RUN_LOCAL_SETUP.cmd'
+      - 'WINDOWS_QUICKSTART.md'
+      - '.github/workflows/windows-setup.yml'
+  push:
+    paths:
+      - 'tools/setup-windows.ps1'
+      - 'RUN_LOCAL_SETUP.cmd'
+      - 'WINDOWS_QUICKSTART.md'
+      - '.github/workflows/windows-setup.yml'
+
+jobs:
+  script-syntax:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate PowerShell parsing and entry point
+        shell: pwsh
+        run: |
+          $tokens = $null
+          $errors = $null
+          [System.Management.Automation.Language.Parser]::ParseFile((Join-Path $PWD 'tools/setup-windows.ps1'), [ref]$tokens, [ref]$errors) | Out-Null
+          if ($errors.Count -gt 0) {
+            $errors | ForEach-Object { Write-Error $_ }
+            exit 1
+          }
+          if (-not (Test-Path 'RUN_LOCAL_SETUP.cmd')) { throw 'Missing Windows entrypoint' }
+          if (-not (Test-Path 'WINDOWS_QUICKSTART.md')) { throw 'Missing setup documentation' }
