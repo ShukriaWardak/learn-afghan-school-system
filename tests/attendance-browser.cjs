@@ -1,0 +1,61 @@
+const assert=require('node:assert/strict');
+const {chromium}=require('playwright');
+if(process.env.LEARN_INTEGRATION_TEST!=='1')throw new Error('Disposable CI database only');
+const base='http://127.0.0.1:8099/';
+const wait=async(fn)=>{
+ for(let i=0;i<70;i++){if(await fn())return;await new Promise(r=>setTimeout(r,100));}
+ throw new Error('Attendance browser condition timed out');
+};
+(async()=>{
+ const browser=await chromium.launch({headless:true});
+ const errors=[];
+ try{
+  const context=await browser.newContext(),page=await context.newPage();
+  page.on('pageerror',error=>errors.push(error.message));
+  await page.goto(base+'index.html');
+  await page.locator('#loginForm').waitFor();
+  await page.locator('#loginUser').fill('test_super');
+  await page.locator('#loginPassword').fill('Disposable-test-password-2026');
+  await page.locator('#submitLogin').click();
+  await page.locator('#authScreen').waitFor({state:'detached'});
+  await page.locator('[data-page="attendance"]').click();
+  await page.locator('#attendanceDate').waitFor();
+  await page.locator('#attendanceDate').fill('2026-03-01');
+  await wait(async()=> (await page.locator('#attendanceCount').textContent()).includes('2 records'));
+  assert.equal(await page.locator('[data-attendance-edit]').count(),2);
+  const row=page.locator('#main tbody tr').filter({hasText:'AT_T1'});
+  await row.getByRole('button',{name:'Edit'}).click();
+  const dialog=page.locator('dialog');
+  await dialog.locator('[name="status"]').selectOption('excused');
+  await dialog.getByRole('button',{name:'Save attendance'}).click();
+  await dialog.waitFor({state:'detached'});
+  await wait(async()=> (await row.textContent()).includes('excused'));
+  await page.locator('#attendanceAdd').click();
+  await dialog.locator('[name="student_id"]').selectOption({label:/ST_003/});
+  await dialog.locator('[name="status"]').selectOption('absent');
+  await dialog.getByRole('button',{name:'Save attendance'}).click();
+  await dialog.waitFor({state:'detached'});
+  await wait(async()=> (await page.locator('#attendanceCount').textContent()).includes('3 records'));
+  await page.reload();
+  await page.locator('[data-page="attendance"]').click();
+  await page.locator('#attendanceDate').fill('2026-03-01');
+  await wait(async()=> (await page.locator('#attendanceCount').textContent()).includes('3 records'));
+  assert.match(await page.locator('#main').textContent(),/AT_T1/);
+  await context.close();
+  const zone=await browser.newContext(),p=await zone.newPage();
+  await p.goto(base+'index.html');
+  await p.locator('#loginForm').waitFor();
+  await p.locator('#loginUser').fill('test_zone');
+  await p.locator('#loginPassword').fill('Disposable-test-password-2026');
+  await p.locator('#submitLogin').click();
+  await p.locator('#authScreen').waitFor({state:'detached'});
+  await p.locator('[data-page="attendance"]').click();
+  await p.locator('#attendanceDate').fill('2026-03-01');
+  await wait(async()=> (await p.locator('#attendanceCount').textContent()).includes('2 records'));
+  assert.equal(await p.locator('#attendanceAdd').count(),0);
+  assert.ok(!(await p.locator('#main').textContent()).includes('AT_T2'));
+  await zone.close();
+  assert.deepEqual(errors,[]);
+  console.log('PASS: attendance navigation, daily filtering, audited correction, creation/reload and zone-scoped read-only UI');
+ }finally{await browser.close();}
+})().catch(error=>{console.error(error);process.exit(1)});
