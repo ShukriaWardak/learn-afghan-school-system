@@ -1,0 +1,69 @@
+const assert=require('node:assert/strict');
+const {chromium}=require('playwright');
+if(process.env.LEARN_INTEGRATION_TEST!=='1')throw new Error('Disposable CI only');
+const base='http://127.0.0.1:8099/';
+const wait=async(check)=>{
+ for(let i=0;i<75;i++){if(await check())return;await new Promise(resolve=>setTimeout(resolve,100));}
+ throw new Error('Personnel attendance UI timed out');
+};
+const signIn=async(page,username)=>{
+ await page.goto(base+'index.html');
+ await page.locator('#loginForm').waitFor();
+ await page.locator('#loginUser').fill(username);
+ await page.locator('#loginPassword').fill('Disposable-test-password-2026');
+ await page.locator('#submitLogin').click();
+ await page.locator('#authScreen').waitFor({state:'detached'});
+};
+(async()=>{
+ const browser=await chromium.launch({headless:true}),errors=[];
+ try {
+  const context=await browser.newContext();
+  const page=await context.newPage();
+  page.on('pageerror',error=>errors.push(error.message));
+  await signIn(page,'test_super');
+  await page.locator('[data-page="teacher_attendance"]').click();
+  await page.locator('#personnelAttendanceDate').waitFor();
+  await page.locator('#personnelAttendanceDate').fill('2026-03-02');
+  await wait(async()=> (await page.locator('#personnelAttendanceCount').textContent()).includes('2 records'));
+  assert.equal(await page.locator('[data-personnel-attendance-edit]').count(),2);
+  const teacherRow=page.locator('#main tbody tr').filter({hasText:'PAT_T1'});
+  await teacherRow.getByRole('button',{name:'Edit'}).click();
+  const dialog=page.locator('dialog');
+  await dialog.locator('[name="status"]').selectOption('present');
+  await dialog.getByRole('button',{name:'Save attendance'}).click();
+  await dialog.waitFor({state:'detached'});
+  await wait(async()=> (await teacherRow.textContent()).includes('present'));
+  await page.locator('[data-page="staff_attendance"]').click();
+  await page.locator('#personnelAttendanceDate').fill('2026-03-02');
+  await wait(async()=> (await page.locator('#personnelAttendanceCount').textContent()).includes('1 records'));
+  assert.match(await page.locator('#main').textContent(),/PAT_S1/);
+  await page.locator('#personnelAttendanceDate').fill('2026-03-03');
+  await wait(async()=> (await page.locator('#personnelAttendanceCount').textContent()).includes('0 records'));
+  await page.locator('#personnelAttendanceAdd').click();
+  const newPerson=await dialog.locator('[name="personnel_id"] option').filter({hasText:'PAT_S1'}).getAttribute('value');
+  assert.ok(newPerson,'Active staff fixture available');
+  await dialog.locator('[name="personnel_id"]').selectOption(newPerson);
+  await dialog.locator('[name="status"]').selectOption('late');
+  await dialog.getByRole('button',{name:'Save attendance'}).click();
+  await dialog.waitFor({state:'detached'});
+  await wait(async()=> (await page.locator('#personnelAttendanceCount').textContent()).includes('1 records'));
+  await page.reload();
+  await page.locator('[data-page="staff_attendance"]').click();
+  await page.locator('#personnelAttendanceDate').fill('2026-03-03');
+  await wait(async()=> (await page.locator('#personnelAttendanceCount').textContent()).includes('1 records'));
+  assert.match(await page.locator('#main').textContent(),/PAT_S1/);
+  await context.close();
+  const scoped=await browser.newContext(),zone=await scoped.newPage();
+  zone.on('pageerror',error=>errors.push(error.message));
+  await signIn(zone,'test_zone');
+  await zone.locator('[data-page="teacher_attendance"]').click();
+  await zone.locator('#personnelAttendanceDate').fill('2026-03-02');
+  await wait(async()=> (await zone.locator('#personnelAttendanceCount').textContent()).includes('1 records'));
+  assert.equal(await zone.locator('#personnelAttendanceAdd').count(),0);
+  assert.equal(await zone.locator('[data-personnel-attendance-edit]').count(),0);
+  assert.ok(!(await zone.locator('#main').textContent()).includes('PAT_T2'));
+  await scoped.close();
+  assert.deepEqual(errors,[]);
+  console.log('PASS: teacher/staff attendance routing, date selection, create/edit persistence, scoped read-only access');
+ } finally {await browser.close();}
+})().catch(error=>{console.error(error);process.exit(1);});
