@@ -14,7 +14,7 @@ This development branch (`feature/student-registry`, draft PR #4) adds the stude
 | Users | Super-admin read-only directory, first 200 accounts | Invitations, editing, reset and MFA are not implemented |
 | Audit | Transactional logs for zone/branch writes; recent 100 events | Verify against a running database |
 | CSV | Authorized branch export; branch-page search/zone filters; formula neutralization | Export helper checks passed; browser download testing pending |
-| Reports | Signed-in branch status totals, zone breakdown and authorized CSV download | Isolated report checks passed; browser/MySQL integration pending |
+| Reports | Live scoped school/branch metrics, student/personnel status and attendance summary by date, aggregate CSV | Requires existing migrations 001–006; automated CI and local acceptance testing pending |
 | Departments | Super-admin directory, create and rename; transactional audit events | Uses existing departments table; parent assignments preserved |
 | Teachers / Staff | Scoped directories, search/status filters, super-admin create/edit/inactivate, stale-edit protection | Requires migration 003; personnel records do not create login accounts |
 | Branch admins | Super-admin read-only directory of branch-admin accounts | Account provisioning/editing still pending |
@@ -60,6 +60,10 @@ As a super administrator, open **Departments**, add an approved code/name, then 
 Zone and branch administrators can read personnel only within their assigned zone or branch. Department users have no personnel access yet. Only super administrators can write records or view the central department and branch-admin directories. Staff records are separate from login accounts, and this first registry does not include payroll, attendance, contact details or identity documents. The personnel and branch-admin directories display at most 1,000 records; filters search those loaded records.
 
 Run `node tests/registry.cjs` for isolated directory checks. The GitHub Actions integration job creates a disposable MySQL database and checks creation, editing, duplicate/invalid input, stale edits, CSRF, role boundaries, audit events and logout through the PHP APIs. `tests/setup-integration.php` refuses an existing database and is for disposable CI only. Check the workflow result for the exact commit before treating integration tests as passed.
+
+### Reports & Export
+
+**Reports & Export** now shows authorized aggregate student, teacher, staff, attendance and branch statistics, with a selectable report date and downloadable branch-aggregate CSV. No individual student/staff names are included in that export. Zone/branch roles have server-scoped results; department users are denied. CSV cells are hardened against spreadsheet formulas and export fails rather than silently truncating more than 200 branches. See [database/REPORTING_SETUP.md](database/REPORTING_SETUP.md). This is a development feature and requires review and CI/local checks before production use.
 
 ### Teacher and staff attendance
 
