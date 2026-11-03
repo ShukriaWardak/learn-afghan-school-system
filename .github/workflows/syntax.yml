@@ -18,6 +18,7 @@ jobs:
           node --check students.js
           node --check attendance.js
           node --check personnel-attendance.js
+          node --check reports.js
       - name: PHP syntax
         run: |
           php -l check-setup.php
@@ -42,6 +43,9 @@ jobs:
           test -f database/006_personnel_attendance.sql
           test -f backend/api/personnel_attendance.php
           test -f backend/api/personnel_attendance_save.php
+          test -f backend/api/reports_summary.php
+          test -f backend/api/reports_export.php
+          test -f backend/reporting.php
           test -f backend/api/attendance.php
           test -f backend/api/attendance_save.php
           test -f check-setup.php
@@ -96,6 +100,8 @@ jobs:
           node tests/attendance-browser.cjs
           node tests/personnel-attendance-integration.cjs
           node tests/personnel-attendance-browser.cjs
+          node tests/reports-integration.cjs
+          node tests/reports-browser.cjs
       - name: Server diagnostics
         if: failure()
         run: cat /tmp/learn-php-test.log || true
