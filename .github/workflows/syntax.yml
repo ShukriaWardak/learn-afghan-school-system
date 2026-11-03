@@ -74,7 +74,6 @@ jobs:
           node tests/personnel-integration.cjs
           node tests/setup-checks.cjs
           node tests/students-integration.cjs
-          node tests/attendance-integration.cjs
           node tests/password-reset.cjs
           node tests/first-admin.cjs
       - name: Install browser test dependencies
@@ -89,6 +88,8 @@ jobs:
           server_pid=$!
           trap 'kill "$server_pid"' EXIT
           node tests/students-browser.cjs
+          node tests/attendance-integration.cjs
+          node tests/attendance-browser.cjs
       - name: Server diagnostics
         if: failure()
         run: cat /tmp/learn-php-test.log || true
