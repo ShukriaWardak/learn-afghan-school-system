@@ -9,6 +9,9 @@ function reportDate(mixed $value): string {
     if (!is_string($value) || !preg_match('/^\d{4}-\d{2}-\d{2}$/D', $value)) {
         throw new InvalidArgumentException('Provide a valid date in YYYY-MM-DD format.');
     }
+    if (substr($value,0,4)==='0000') {
+        throw new InvalidArgumentException('Provide a valid date in YYYY-MM-DD format.');
+    }
     $parsed=DateTimeImmutable::createFromFormat('!Y-m-d',$value);
     if (!$parsed || $parsed->format('Y-m-d')!==$value) {
         throw new InvalidArgumentException('Provide a valid date in YYYY-MM-DD format.');
