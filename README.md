@@ -19,6 +19,7 @@ This development branch (`feature/student-registry`, draft PR #4) adds the stude
 | Teachers / Staff | Scoped directories, search/status filters, super-admin create/edit/inactivate, stale-edit protection | Requires migration 003; personnel records do not create login accounts |
 | Branch admins | Super-admin read-only directory of branch-admin accounts | Account provisioning/editing still pending |
 | Students | Scoped directory, code/name/grade search, branch/status filters, super-admin registration/editing, conflict recovery and audit logging | Requires migration 004; automated API and browser tests are included; XAMPP verification pending |
+| Student attendance | Daily read/write registry with role-scoped reads, super-admin audited updates, and date/status filters | Requires migration 005; CI and XAMPP confirmation pending |
 | Other modules | Planning screens | Finance, health and approvals are not implemented |
 | Operations | Setup instructions and syntax-check workflow | PDF/Excel reporting, backups/recovery and production readiness remain |
 
@@ -58,6 +59,10 @@ As a super administrator, open **Departments**, add an approved code/name, then 
 Zone and branch administrators can read personnel only within their assigned zone or branch. Department users have no personnel access yet. Only super administrators can write records or view the central department and branch-admin directories. Staff records are separate from login accounts, and this first registry does not include payroll, attendance, contact details or identity documents. The personnel and branch-admin directories display at most 1,000 records; filters search those loaded records.
 
 Run `node tests/registry.cjs` for isolated directory checks. The GitHub Actions integration job creates a disposable MySQL database and checks creation, editing, duplicate/invalid input, stale edits, CSRF, role boundaries, audit events and logout through the PHP APIs. `tests/setup-integration.php` refuses an existing database and is for disposable CI only. Check the workflow result for the exact commit before treating integration tests as passed.
+
+### Student attendance
+
+After migrations 001–004, import `database/005_student_attendance.sql` (additive) into the same `learn_afghan` database. Signed-in users with student-directory permissions can view attendance within their zone/branch scopes. Only super administrators can create or correct records. This module has one status per student and date (present/absent/late/excused), uniqueness checks, version conflict protection and transactional audit records. See [database/ATTENDANCE_SETUP.md](database/ATTENDANCE_SETUP.md) before testing; use synthetic records only. GitHub CI is not a substitute for local/production approval.
 
 ### Students
 

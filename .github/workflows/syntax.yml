@@ -16,6 +16,7 @@ jobs:
           node --check live.js
           node --check registry.js
           node --check students.js
+          node --check attendance.js
       - name: PHP syntax
         run: |
           php -l check-setup.php
@@ -36,6 +37,9 @@ jobs:
           test -f backend/api/audit.php
           test -f database/003_personnel.sql
           test -f database/004_students.sql
+          test -f database/005_student_attendance.sql
+          test -f backend/api/attendance.php
+          test -f backend/api/attendance_save.php
           test -f check-setup.php
   integration:
     runs-on: ubuntu-latest
@@ -84,6 +88,8 @@ jobs:
           server_pid=$!
           trap 'kill "$server_pid"' EXIT
           node tests/students-browser.cjs
+          node tests/attendance-integration.cjs
+          node tests/attendance-browser.cjs
       - name: Server diagnostics
         if: failure()
         run: cat /tmp/learn-php-test.log || true
