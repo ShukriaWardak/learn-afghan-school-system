@@ -4,10 +4,11 @@ This repository is a **development prototype**, not an approved production infor
 
 ## Architecture
 
-- The frontend is plain HTML, CSS and JavaScript: `index.html`, `app.js`, `live.js`, `registry.js`, `students.js`, `styles.css`, `dashboard-theme.css`, `reference-layout.css`, `login-theme.css`.
+- The frontend is plain HTML, CSS and JavaScript: `index.html`, `app.js`, `live.js`, `registry.js`, `students.js`, `attendance.js`, `personnel-attendance.js`, `reports.js`, `styles.css`, `dashboard-theme.css`, `reference-layout.css`, `login-theme.css`.
 - The authenticated backend uses PHP endpoints under `backend/api/`, including `login.php`, `session.php`, `logout.php`, zones, branches, departments, personnel and students.
-- MySQL schema and migrations are in `database/`: `schema.sql`, `002_login_attempts.sql`, `003_personnel.sql`, `004_students.sql`.
+- MySQL schema and migrations are in `database/`: `schema.sql`, `002_login_attempts.sql`, `003_personnel.sql`, `004_students.sql`, `005_student_attendance.sql`, `006_personnel_attendance.sql`.
 - The local, gitignored credentials file is `backend/config.local.php`; see `backend/config.example.php` for the template.
+- The report endpoints are `backend/api/reports_summary.php` and `backend/api/reports_export.php`, backed by read-only SQL in `backend/reporting.php` and `reports.js`. Reports are branch aggregates only, scoped to roles, and CSV cells must be formula-safe.
 - The branded split-screen sign-in is rendered by `Live.showLogin()` in `live.js` and styled by `login-theme.css`. Preserve the existing username/password form IDs and `csrf.php` / `login.php` authentication contract. Do not replace authentication with localStorage or hardcoded credentials.
 
 ## Safety and approvals
