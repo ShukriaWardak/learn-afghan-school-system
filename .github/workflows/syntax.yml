@@ -95,6 +95,7 @@ jobs:
       - name: Test student browser interactions
         env:
           LEARN_INTEGRATION_TEST: '1'
+          MYSQL_TEST_PASSWORD: disposable-ci-only
         run: |
           php -S 127.0.0.1:8099 -t . > /tmp/learn-php-test.log 2>&1 &
           server_pid=$!
