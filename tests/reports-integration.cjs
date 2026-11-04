@@ -78,8 +78,10 @@ const sumStatuses=(rows,field='status')=>rows.reduce((sum,row)=>({...sum,[row[fi
  assert.match(exportResponse.headers.get('content-type'),/text\/csv/);
  assert.match(exportResponse.headers.get('content-disposition'),/attachment/);
  assert.match(exportResponse.headers.get('cache-control'),/no-store/);
- const csv=await exportResponse.text();
- assert.ok(csv.startsWith('\uFEFF'));
+ // Fetch's text decoder consumes the UTF-8 BOM; inspect the downloaded bytes.
+ const csvBytes=Buffer.from(await exportResponse.arrayBuffer());
+ assert.deepEqual([...csvBytes.subarray(0,3)],[0xEF,0xBB,0xBF]);
+ const csv=csvBytes.toString('utf8');
  assert.match(csv,/Student attendance recorded,Personnel attendance recorded,Date/);
  assert.equal(csv.trim().split('\n').length,branches.length+1);
  const testCsv=execFileSync('php',['-r',

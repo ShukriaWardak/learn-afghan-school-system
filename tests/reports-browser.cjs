@@ -21,7 +21,8 @@ const signIn=async(page,username)=>{
   await page.locator('[data-page="reports"]').click();
   await page.locator('#reportDate').waitFor();
   await page.locator('#reportDate').fill('2026-03-02');
-  await wait(async()=>await page.locator('#reportCount').count()>0);
+  await page.keyboard.press('Tab');
+  await wait(async()=>await page.locator('#reportCount').count()>0 && (await page.locator('#main').textContent()).includes('Recorded attendance — 2026-03-02'));
   assert.match(await page.locator('#main').textContent(),/Reports & Export/);
   assert.match(await page.locator('#main').textContent(),/Recorded attendance/);
   assert.match(await page.locator('#main').textContent(),/Branch summary/);
@@ -37,6 +38,7 @@ const signIn=async(page,username)=>{
   assert.ok(body.totals.students>=3);
   assert.ok(body.branches.length>0);
   await page.locator('#reportDate').fill('2026-03-03');
+  await page.keyboard.press('Tab');
   await wait(async()=> (await page.locator('#main').textContent()).includes('2026-03-03'));
   await adminContext.close();
 

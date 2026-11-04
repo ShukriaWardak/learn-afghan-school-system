@@ -19,6 +19,7 @@ jobs:
           node --check attendance.js
           node --check personnel-attendance.js
           node --check reports.js
+          node --check approvals.js
       - name: PHP syntax
         run: |
           php -l check-setup.php
@@ -30,6 +31,7 @@ jobs:
           node tests/live-reports.cjs
           node tests/registry.cjs
           node tests/students.cjs
+          node tests/approvals.cjs
       - name: Required files
         run: |
           test -f database/schema.sql
@@ -46,6 +48,8 @@ jobs:
           test -f backend/api/reports_summary.php
           test -f backend/api/reports_export.php
           test -f backend/reporting.php
+          test -f backend/api/approvals.php
+          test -f backend/api/approval_decide.php
           test -f backend/api/attendance.php
           test -f backend/api/attendance_save.php
           test -f check-setup.php
@@ -102,6 +106,8 @@ jobs:
           node tests/personnel-attendance-browser.cjs
           node tests/reports-integration.cjs
           node tests/reports-browser.cjs
+          node tests/approvals-integration.cjs
+          node tests/approvals-browser.cjs
       - name: Server diagnostics
         if: failure()
         run: cat /tmp/learn-php-test.log || true

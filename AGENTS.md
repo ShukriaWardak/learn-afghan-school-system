@@ -4,11 +4,12 @@ This repository is a **development prototype**, not an approved production infor
 
 ## Architecture
 
-- The frontend is plain HTML, CSS and JavaScript: `index.html`, `app.js`, `live.js`, `registry.js`, `students.js`, `attendance.js`, `personnel-attendance.js`, `reports.js`, `styles.css`, `dashboard-theme.css`, `reference-layout.css`, `login-theme.css`.
+- The frontend is plain HTML, CSS and JavaScript: `index.html`, `app.js`, `live.js`, `registry.js`, `students.js`, `attendance.js`, `personnel-attendance.js`, `reports.js`, `approvals.js`, `styles.css`, `dashboard-theme.css`, `reference-layout.css`, `login-theme.css`.
 - The authenticated backend uses PHP endpoints under `backend/api/`, including `login.php`, `session.php`, `logout.php`, zones, branches, departments, personnel and students.
 - MySQL schema and migrations are in `database/`: `schema.sql`, `002_login_attempts.sql`, `003_personnel.sql`, `004_students.sql`, `005_student_attendance.sql`, `006_personnel_attendance.sql`.
 - The local, gitignored credentials file is `backend/config.local.php`; see `backend/config.example.php` for the template.
 - The report endpoints are `backend/api/reports_summary.php` and `backend/api/reports_export.php`, backed by read-only SQL in `backend/reporting.php` and `reports.js`. Reports are branch aggregates only, scoped to roles, and CSV cells must be formula-safe.
+- Branch approvals use `backend/api/approvals.php`, `backend/api/approval_decide.php` and `backend/branch_approvals.php`. Only super admins review pending branch activation. Preserve review-version checks, role/CSRF enforcement and atomic audit/status updates. This queue does not define departmental or financial approval policy.
 - The branded split-screen sign-in is rendered by `Live.showLogin()` in `live.js` and styled by `login-theme.css`. Preserve the existing username/password form IDs and `csrf.php` / `login.php` authentication contract. Do not replace authentication with localStorage or hardcoded credentials.
 
 ## Safety and approvals
@@ -40,6 +41,7 @@ This repository is a **development prototype**, not an approved production infor
 - `node tests/live-reports.cjs`
 - `node tests/registry.cjs`
 - `node tests/students.cjs`
+- `node tests/approvals.cjs`
 - `php -l` for modified PHP files.
 
 CI integration/browser tests use disposable fixtures with `LEARN_INTEGRATION_TEST=1`. **Never run `tests/setup-integration.php` against an existing local school database.** The Playwright browser suite in `tests/students-browser.cjs` also checks the branded login page.
@@ -49,6 +51,6 @@ CI integration/browser tests use disposable fixtures with `LEARN_INTEGRATION_TES
 1. Ensure new branded login stays responsive and secure; verify successful/failed login, logout, and keyboard/screen-reader accessibility.
 2. Confirm XAMPP + MySQL migrations, first authorized super admin and persistence of synthetic zone/branch/student/teacher/staff records.
 3. Review backend role boundaries, audit transactions, CSRF, stale-edit protection, CSV export safety, and browser errors.
-4. Plan (do not claim implemented): finance, payroll, attendance, approvals, health, backup and recovery, production deployment.
+4. Continue finance, payroll, departmental forms/approvals, health, backup/recovery and production work according to reviewed requirements. Student/personnel attendance and branch activation approvals have development code; see PROJECT_STATUS.md and verify CI/local evidence before claiming completion.
 
 If requirements are unclear, preserve working behavior and propose an incremental plan rather than guessing official school policy or real account details.
