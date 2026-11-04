@@ -15,8 +15,10 @@ try {
     if (!is_string($version) || !preg_match('/^[a-f0-9]{64}$/D',$version)) throw new InvalidArgumentException('Refresh the branch review before deciding');
     $note=$body['note']??'';
     if (!is_string($note)) throw new InvalidArgumentException('Invalid review note');
-    $note=trim($note);
-    if ($note!=='') $note=recordText(['note'=>$note],'note',500);
+    $note=str_replace(["\r\n","\r"],"\n",trim($note));
+    if ($note!=='' && (!preg_match('/^.{1,500}$/usD',$note) || preg_match('/[\x00-\x08\x0B-\x1F\x7F]/u',$note))) {
+        throw new InvalidArgumentException('Review notes must contain at most 500 characters without control characters');
+    }
     if ($decision==='reject' && $note==='') throw new InvalidArgumentException('Provide a reason for rejecting this branch');
 } catch (InvalidArgumentException $error) {
     respond(400,['error'=>$error->getMessage()]);

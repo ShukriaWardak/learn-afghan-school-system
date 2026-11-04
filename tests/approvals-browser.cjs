@@ -49,9 +49,10 @@ const create=async(page,code,name)=>page.evaluate(async({code,name})=>{
     await create(page,'REVIEW_UI_02','Browser rejected branch');await page.locator('#approvalsRefresh').click();await page.locator('#approvalsCount').waitFor();
     await page.locator('#approvalsSearch').fill('REVIEW_UI_02');
     await page.locator('#approvalsTable').getByRole('button',{name:'Reject',exact:true}).click();
-    await dialog.locator('[name="note"]').fill('نیاز به تکمیل اطلاعات');
+    await dialog.locator('[name="note"]').fill('نیاز به تکمیل اطلاعات\nبررسی دوباره');
     await dialog.getByRole('button',{name:'Confirm rejection'}).click();await dialog.waitFor({state:'detached'});
     await wait(async()=>(await page.locator('#main').textContent()).includes('نیاز به تکمیل اطلاعات'));
+    assert.match(await page.locator('#main').textContent(),/نیاز به تکمیل اطلاعات\nبررسی دوباره/);
     assert.match(await page.locator('#main').textContent(),/Rejected/);
     await create(page,'REVIEW_UI_03','Browser expired review');await page.locator('#approvalsRefresh').click();await page.locator('#approvalsCount').waitFor();
     await page.locator('#approvalsSearch').fill('REVIEW_UI_03');await page.locator('#approvalsTable').getByRole('button',{name:'Approve',exact:true}).click();

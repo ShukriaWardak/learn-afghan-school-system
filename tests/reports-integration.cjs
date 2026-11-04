@@ -29,6 +29,9 @@ class Client{
  }
 }
 const sumStatuses=(rows,field='status')=>rows.reduce((sum,row)=>({...sum,[row[field]]:(sum[row[field]]||0)+1}),{});
+const parseCsv=csv=>JSON.parse(execFileSync('php',['-r',
+ "$rows=[];while(($row=fgetcsv(STDIN,0,',','\"',''))!==false)$rows[]=$row;echo json_encode($rows,JSON_THROW_ON_ERROR);"
+],{input:csv.replace(/^\uFEFF/,''),encoding:'utf8'}));
 (async()=>{
  const day='2026-03-02',query='?date='+day;
  const anonymous=new Client();
@@ -82,8 +85,14 @@ const sumStatuses=(rows,field='status')=>rows.reduce((sum,row)=>({...sum,[row[fi
  const csvBytes=Buffer.from(await exportResponse.arrayBuffer());
  assert.deepEqual([...csvBytes.subarray(0,3)],[0xEF,0xBB,0xBF]);
  const csv=csvBytes.toString('utf8');
- assert.match(csv,/Student attendance recorded,Personnel attendance recorded,Date/);
- assert.equal(csv.trim().split('\n').length,branches.length+1);
+ const csvRows=parseCsv(csv);
+ assert.deepEqual(csvRows[0],['Zone code','Zone','Branch code','Branch','Status','Students','Teachers','Staff','Student attendance recorded','Personnel attendance recorded','Date']);
+ assert.equal(csvRows.length,branches.length+1);
+ assert.deepEqual(csvRows.slice(1).map(row=>row[2]),report.branches.map(branch=>branch.code));
+ for(let i=0;i<report.branches.length;i++){
+  assert.equal(csvRows[i+1][8],String(report.branches[i].student_attendance));
+  assert.equal(csvRows[i+1][9],String(report.branches[i].personnel_attendance));
+ }
  const testCsv=execFileSync('php',['-r',
   "require '"+path.join(__dirname,'../backend/reporting.php').replaceAll('\\','\\\\')+"';echo json_encode(['='=>safeCsvCell('=1+1'),'plus'=>safeCsvCell(' +1'),'at'=>safeCsvCell('@CMD'),'tab'=>safeCsvCell(\"\\t-EXCEL\"),'safe'=>safeCsvCell('School'), 'newline'=>safeCsvCell(\"one\\ntwo\")]);"
  ],{encoding:'utf8'});
@@ -100,7 +109,7 @@ const sumStatuses=(rows,field='status')=>rows.reduce((sum,row)=>({...sum,[row[fi
   const scopedCsv=await client.raw('reports_export.php'+query);
   assert.equal(scopedCsv.status,200);
   const text=await scopedCsv.text();
-  assert.equal(text.trim().split('\n').length,accessible.length+1);
+  assert.equal(parseCsv(text).length,accessible.length+1);
   assert.ok(!text.includes('Test Teacher')); // no private records in CSV
  }
  const denied=new Client();await denied.login('test_department');

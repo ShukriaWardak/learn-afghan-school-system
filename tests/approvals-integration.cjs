@@ -54,7 +54,7 @@ const fixture=sql=>execFileSync('php',['-r',`
   let history=(await admin.request('approvals.php')).decisions.filter(d=>d.branch_id===id);
   assert.equal(history.length,1);assert.equal(history[0].decision,'approve');assert.equal(history[0].note,payload.note);
   const rejected=await create('REVIEW_API_02','Test rejected branch');const rejectRow=await getRow(rejected);
-  const note='اطلاعات شعبه تکمیل شود <script>test</script>';
+  const note='اطلاعات شعبه تکمیل شود\n<script>test</script>';
   assert.equal((await admin.request('approval_decide.php',{branch_id:rejected,decision:'reject',review_version:rejectRow.review_version,note})).status,'inactive');
   history=(await admin.request('approvals.php')).decisions.filter(d=>d.branch_id===rejected);
   assert.equal(history.length,1);assert.equal(history[0].note,note);assert.equal(history[0].decision,'reject');
@@ -75,6 +75,8 @@ const fixture=sql=>execFileSync('php',['-r',`
   try{
     const capped=await admin.request('approvals.php');assert.equal(capped.approvals.length,200);assert.equal(capped.truncated,true);
     assert.ok(capped.approvals.every(b=>b.status==='pending'));
+    const report=await admin.request('reports_summary.php?date=2026-03-02');assert.equal(report.branches_truncated,true);
+    await admin.request('reports_export.php?date=2026-03-02',undefined,409);
   }finally{fixture("DELETE FROM branches WHERE code LIKE 'REVIEW_LIMIT_%'");}
   await admin.request('logout.php',{});await admin.request('approvals.php',undefined,401);
   console.log('PASS: branch approve/reject persistence, decision notes/history, validation, role/CSRF/origin guards, stale review rejection, replay protection, audit rollback, queue limits and logout');

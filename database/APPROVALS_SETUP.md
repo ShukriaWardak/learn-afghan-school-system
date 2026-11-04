@@ -6,7 +6,7 @@ This development feature handles **branch activation review**. It uses the exist
 
 - A super administrator creates a branch through the existing form; its initial status is `pending`.
 - **Approvals** lists the first 200 pending branches, with code/name/zone/location search and an explicit truncation notice.
-- Approve changes `pending` to `active`. Reject changes `pending` to `inactive` and requires a review note of at most 500 characters. Approval notes are optional.
+- Approve changes `pending` to `active`. Reject changes `pending` to `inactive` and requires a review note of at most 500 characters. Approval notes are optional. Notes support Unicode and multiple lines; history preserves line breaks and handles text direction automatically.
 - The branch update and audit event commit together. Audit failure rolls the branch status back.
 - A review version fingerprints all shown branch fields. Changes to a branch after the dialog opens, including changes within the same timestamp second, cause a 409 conflict. The dialog preserves the note and offers an explicit close-and-refresh action.
 - Only a currently pending branch can be decided; replayed decisions are refused. The queue shows the latest 50 approval/rejection events with notes and reviewer names.

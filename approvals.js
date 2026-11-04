@@ -41,7 +41,7 @@ const Approvals = {
   history(){
     if(!this.decisions.length)return '<div class="empty">No branch approval decisions recorded yet.</div>';
     return '<div class="table-wrap"><table><thead><tr><th>Branch</th><th>Decision</th><th>Note</th><th>Reviewed by</th><th>Time</th></tr></thead><tbody>'
-      +this.decisions.map(row=>'<tr>'+[row.branch_code+' — '+row.branch_name,row.decision==='approve'?'Approved':'Rejected',row.note||"—",row.reviewer||"—",row.created_at].map(value=>'<td>'+escapeHtml(value)+'</td>').join("")+'</tr>').join("")+'</tbody></table></div>';
+      +this.decisions.map(row=>'<tr>'+[row.branch_code+' — '+row.branch_name,row.decision==='approve'?'Approved':'Rejected',row.note||"—",row.reviewer||"—",row.created_at].map((value,index)=>'<td'+(index===2?' class="approval-note" dir="auto"':'')+'>'+escapeHtml(value)+'</td>').join("")+'</tr>').join("")+'</tbody></table></div>';
   },
   view(){
     if(!this.canRead())return heading("Approvals","Your account does not have access to branch approvals.");
