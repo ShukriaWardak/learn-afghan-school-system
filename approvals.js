@@ -5,7 +5,9 @@ const Approvals = {
   canRead(){return Live.active && Live.user?.role==="super_admin";},
   reset(){
     ++this.sequence;this.rows=[];this.decisions=[];this.error="";this.loading=false;
-    this.search="";this.truncated=false;this.dialog?.close();this.dialog=null;
+    this.search="";this.truncated=false;
+    const dialog=this.dialog;this.dialog=null;
+    dialog?.close();dialog?.remove();
   },
   async load(){
     const seq=++this.sequence,uid=Live.user?.id,csrf=Live.csrf;

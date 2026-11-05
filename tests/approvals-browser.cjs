@@ -56,10 +56,12 @@ const create=async(page,code,name)=>page.evaluate(async({code,name})=>{
     assert.match(await page.locator('#main').textContent(),/Rejected/);
     await create(page,'REVIEW_UI_03','Browser expired review');await page.locator('#approvalsRefresh').click();await page.locator('#approvalsCount').waitFor();
     await page.locator('#approvalsSearch').fill('REVIEW_UI_03');await page.locator('#approvalsTable').getByRole('button',{name:'Approve',exact:true}).click();
-    await page.evaluate(async()=>{
+    const expiredReview=await page.evaluate(async()=>{
       await fetch('backend/api/logout.php',{method:'POST',headers:{'X-CSRF-Token':Live.csrf}});
       await Approvals.load();
+      return {loginVisible:Boolean(document.querySelector('#loginForm')),dialogs:document.querySelectorAll('dialog').length,rows:Approvals.rows.length,decisions:Approvals.decisions.length};
     });
+    assert.deepEqual(expiredReview,{loginVisible:true,dialogs:0,rows:0,decisions:0});
     await page.locator('#loginForm').waitFor();assert.equal(await page.locator('dialog').count(),0);
     assert.equal(await page.evaluate(()=>Approvals.rows.length),0);assert.equal(await page.evaluate(()=>Approvals.decisions.length),0);
     await context.close();

@@ -39,9 +39,13 @@ const fixture=async()=>({approvals:rows,decisions,limit:200,truncated:false});
   context.Live.request=async()=>({approvals:[rows[1]],decisions:[],limit:200,truncated:false});await approvals.load();
   finishOld({approvals:rows,decisions,limit:200,truncated:false});await old;
   assert.equal(approvals.rows.length,1);assert.equal(approvals.rows[0].id,2);assert.equal(approvals.decisions.length,0);
-  let closed=false;approvals.dialog={close(){closed=true;}};approvals.reset();assert.ok(closed);assert.equal(approvals.rows.length,0);
+  // Closing a native dialog queues its close event; reset must remove it immediately.
+  let closed=false,removed=false;
+  approvals.dialog={close(){closed=true;},remove(){removed=true;}};
+  approvals.reset();assert.ok(closed);assert.ok(removed,'Review details removed before the queued close event');
+  assert.equal(approvals.dialog,null);assert.equal(approvals.rows.length,0);assert.equal(approvals.decisions.length,0);
   context.Live.showLogin=()=>{context.Live.active=false;approvals.reset();};
   context.Live.request=async()=>{throw Object.assign(new Error('Expired'),{status:401});};await approvals.load();
   assert.equal(context.Live.active,false);assert.equal(approvals.loading,false);
-  console.log('PASS: approval search, Unicode/HTML escaping, role gates, queue limits, error retry and session/delayed-response isolation');
+  console.log('PASS: approval search, Unicode/HTML escaping, role gates, queue limits, error retry, immediate dialog cleanup and session/delayed-response isolation');
 })().catch(error=>{console.error(error);process.exit(1);});
