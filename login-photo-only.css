@@ -1,0 +1,14 @@
+/* LEARN Afghan login photo replacement only.
+   Copy the approved graduation photo to assets/login-graduates.jpg.
+   Include this stylesheet AFTER the existing login stylesheet.
+   Apply class 'learn-login-photo' to the EXISTING photo container.
+   No form, authentication, session, CSRF or dashboard changes. */
+.learn-login-photo {
+  background-image: linear-gradient(180deg,rgba(4,25,68,.08),rgba(4,25,68,.38)), url("assets/login-graduates.jpg") !important;
+  background-size: cover !important;
+  background-position: center center !important;
+  background-repeat: no-repeat !important;
+}
+@media (max-width: 768px) {
+  .learn-login-photo { background-position: 50% center !important; }
+}
