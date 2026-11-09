@@ -30,3 +30,14 @@ body{background:#eaf3ff;color:#121c35}
 .ref-chart svg circle{stroke:#e8f3ff;stroke-width:1}
 .ref-panel{border:1px solid #e9f1ff}
 @media(max-width:700px){.app .sidebar{position:fixed;z-index:10}.ref-dashboard .ref-banner{height:160px;grid-template-columns:35% 65%}}
+
+.ref-main-menu{margin-top:5px}
+.ref-more-menu{margin:12px 7px 8px;border-top:1px solid #ffffff32;padding-top:12px}
+.ref-more-menu summary{cursor:pointer;color:#c7d9f6;font-size:12px;font-weight:700;padding:8px 9px;border-radius:8px}
+.ref-more-menu summary:hover{background:#ffffff18}
+.ref-more-menu .nav-link{font-size:11px!important;padding:7px 8px!important}
+.ref-more-menu .nav-symbol{font-size:15px;width:20px}
+.app .tenant{display:none}
+.app .sidebar .nav-link.active{box-shadow:0 5px 14px #002e8570}
+.app .sidebar .brand small{color:#e0ebff}
+@media(max-width:1050px){.ref-stats{gap:8px}.ref-stat-label{font-size:12px}.ref-stat strong{font-size:22px}}
