@@ -31,7 +31,7 @@ const Live = {
     document.querySelector("#retryServer").onclick=()=>this.init();
   },
   showLogin() {
-    Students.reset();Attendance.reset();PersonnelAttendance.reset();Reports.reset();Approvals.reset();
+    Students.reset();Attendance.reset();PersonnelAttendance.reset();Reports.reset();Approvals.reset();Finance.reset();
     this.active=false;this.user=null;this.csrf=null;this.users=[];this.events=[];
     document.querySelector("#main").replaceChildren();
     this.showScreen(`<div class="login-shell">
@@ -141,7 +141,7 @@ const Live = {
     state.activity=[];
   },
   enter() {
-    Students.reset();Attendance.reset();PersonnelAttendance.reset();Reports.reset();Approvals.reset();
+    Students.reset();Attendance.reset();PersonnelAttendance.reset();Reports.reset();Approvals.reset();Finance.reset();
     document.querySelector("#authScreen")?.remove();
     document.documentElement.classList.remove("app-loading","auth-required");
     const display=this.user.display_name||this.user.username;
@@ -154,7 +154,7 @@ const Live = {
     document.querySelector("footer").textContent="LEARN Afghan Central Database · Authenticated development environment · Production approval pending";
     const btn=document.querySelector("#logout");
     btn.hidden=false; btn.onclick=()=>this.logout();
-    current="overview";render();
+    current=Finance.member()?"finance":"overview";render();if(current==="finance")Finance.load();
   },
   async logout() {
     try {

@@ -21,6 +21,7 @@ jobs:
           node --check reports.js
           node --check approvals.js
           node --check dashboard-reference.js
+          node --check finance.js
       - name: PHP syntax
         run: |
           php -l check-setup.php
@@ -33,6 +34,7 @@ jobs:
           node tests/registry.cjs
           node tests/students.cjs
           node tests/approvals.cjs
+          node tests/finance.cjs
       - name: Required files
         run: |
           test -f database/schema.sql
@@ -54,6 +56,9 @@ jobs:
           test -f backend/api/attendance.php
           test -f backend/api/attendance_save.php
           test -f check-setup.php
+          test -f database/007_finance.sql
+          test -f backend/api/finance.php
+          test -f backend/api/finance_save.php
   integration:
     runs-on: ubuntu-latest
     services:
@@ -89,11 +94,13 @@ jobs:
           node tests/students-integration.cjs
           node tests/password-reset.cjs
           node tests/first-admin.cjs
+          php tests/setup-finance.php
+          node tests/finance-integration.cjs
       - name: Install browser test dependencies
         run: |
           npm install --no-save --package-lock=false playwright@1.62.1
           npx playwright install --with-deps chromium
-      - name: Test student browser interactions
+      - name: Test browser interactions and module regressions
         env:
           LEARN_INTEGRATION_TEST: '1'
           MYSQL_TEST_PASSWORD: disposable-ci-only
@@ -111,6 +118,7 @@ jobs:
           node tests/reports-browser.cjs
           node tests/approvals-integration.cjs
           node tests/approvals-browser.cjs
+          node tests/finance-browser.cjs
       - name: Server diagnostics
         if: failure()
         run: cat /tmp/learn-php-test.log || true
