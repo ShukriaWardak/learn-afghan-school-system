@@ -1,6 +1,6 @@
 # LEARN Afghan — Central Administration
 
-This development branch (`feature/student-registry`, draft PR #4) adds the student registry to the PHP/MySQL administrative dashboard in draft PR #1. It is not merged into `main` and has not passed the team's end-to-end XAMPP testing.
+This working branch (`feature/branch-approvals-2026-11-04`) includes the branded login, student/personnel registries, both attendance modules, aggregate reports, Windows setup helper and pending branch approvals. It builds on the stacked draft PRs and is not merged into `main`. See [PROJECT_STATUS.md](PROJECT_STATUS.md) for the remaining sections and [database/APPROVALS_SETUP.md](database/APPROVALS_SETUP.md) for the new review queue. The team's end-to-end XAMPP acceptance remains unverified.
 
 ## Current progress
 
@@ -15,13 +15,14 @@ This development branch (`feature/student-registry`, draft PR #4) adds the stude
 | Audit | Transactional logs for zone/branch writes; recent 100 events | Verify against a running database |
 | CSV | Authorized branch export; branch-page search/zone filters; formula neutralization | Export helper checks passed; browser download testing pending |
 | Reports | Live scoped school/branch metrics, student/personnel status and attendance summary by date, aggregate CSV | Requires existing migrations 001–006; automated CI and local acceptance testing pending |
+| Branch approvals | Super-admin pending queue, approve/reject, review notes/history and stale-review protection with transactional audit | Uses existing branch/audit tables; departmental and financial approvals remain planned |
 | Departments | Super-admin directory, create and rename; transactional audit events | Uses existing departments table; parent assignments preserved |
 | Teachers / Staff | Scoped directories, search/status filters, super-admin create/edit/inactivate, stale-edit protection | Requires migration 003; personnel records do not create login accounts |
 | Branch admins | Super-admin read-only directory of branch-admin accounts | Account provisioning/editing still pending |
 | Students | Scoped directory, code/name/grade search, branch/status filters, super-admin registration/editing, conflict recovery and audit logging | Requires migration 004; automated API and browser tests are included; XAMPP verification pending |
 | Student attendance | Daily read/write registry with role-scoped reads, super-admin audited updates, and date/status filters | Requires migration 005; CI passed in PR #7; XAMPP confirmation pending |
 | Teacher/staff attendance | Daily role-scoped teacher and staff attendance with audited super-admin writes and conflict checks | Requires migration 006; CI and XAMPP confirmation pending |
-| Other modules | Planning screens | Finance, health and approvals are not implemented |
+| Other modules | Planning screens | Finance, payroll, health and other department-specific forms are not implemented |
 | Operations | Setup instructions and syntax-check workflow | PDF/Excel reporting, backups/recovery and production readiness remain |
 
 The proposal targets **3 zones and 25 branches**. These are planned scope, not verified live counts. No official zone/branch records or default accounts are seeded. The dashboard's live counts reflect only records accessible to the signed-in account.
@@ -38,12 +39,12 @@ If there are local edits, commit or otherwise preserve them before switching bra
 
 ```bash
 git fetch origin
-git switch feature/student-registry
-git pull --ff-only origin feature/student-registry
+git switch feature/branch-approvals-2026-11-04
+git pull --ff-only origin feature/branch-approvals-2026-11-04
 ```
 
 1. Start Apache and MySQL in XAMPP (PHP 8.1+).
-2. For a fresh database, import `database/schema.sql`, then `database/002_login_attempts.sql`. If already imported, check that the six tables above exist before repeating setup.
+2. For a new empty installation, apply `database/schema.sql`, then migrations `002_login_attempts.sql`, `003_personnel.sql`, `004_students.sql`, `005_student_attendance.sql` and `006_personnel_attendance.sql` in order. Inspect an existing installation and its data before applying any missing migration; the full schema has 10 tables.
 3. Copy `backend/config.example.php` to `backend/config.local.php` and configure a restricted local database account. Never commit this file.
 4. Use an authorized local test account. For an empty installation, follow the CLI first-admin instructions in [backend/README.md](backend/README.md).
 5. If the folder is named `learn-afghan-school-system`, open **http://localhost/learn-afghan-school-system/index.html**. Adjust the folder name if necessary.
@@ -64,6 +65,10 @@ Run `node tests/registry.cjs` for isolated directory checks. The GitHub Actions 
 ### Reports & Export
 
 **Reports & Export** now shows authorized aggregate student, teacher, staff, attendance and branch statistics, with a selectable report date and downloadable branch-aggregate CSV. No individual student/staff names are included in that export. Zone/branch roles have server-scoped results; department users are denied. CSV cells are hardened against spreadsheet formulas and export fails rather than silently truncating more than 200 branches. See [database/REPORTING_SETUP.md](database/REPORTING_SETUP.md). This is a development feature and requires review and CI/local checks before production use.
+
+### Branch approvals
+
+**Approvals** now lists pending branches for super-administrator review. Approval sets a branch active; rejection sets it inactive and requires a review note. Both the status change and decision audit entry commit together. A branch changed since the review was opened is refused, with an explicit refresh action. Recent decisions include reviewer and note. This queue uses existing super-admin permissions; it does not establish general departmental or two-person approval rules. See [database/APPROVALS_SETUP.md](database/APPROVALS_SETUP.md).
 
 ### Teacher and staff attendance
 

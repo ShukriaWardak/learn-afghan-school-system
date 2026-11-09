@@ -26,3 +26,5 @@ dialog.modal::backdrop { background: #10284998; }
 .auth-card .auth-error{color:#a51e32}
 .auth-card .setup-link{color:#175a9e;font-weight:700}
 
+.approval-note{white-space:pre-wrap;overflow-wrap:anywhere;max-width:28rem}
+
