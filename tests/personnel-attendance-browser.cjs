@@ -1,5 +1,6 @@
 const assert=require('node:assert/strict');
 const {chromium}=require('playwright');
+const navigate=require('./browser-navigation.cjs');
 if(process.env.LEARN_INTEGRATION_TEST!=='1')throw new Error('Disposable CI only');
 const base='http://127.0.0.1:8099/';
 const wait=async(check)=>{
@@ -21,7 +22,7 @@ const signIn=async(page,username)=>{
   const page=await context.newPage();
   page.on('pageerror',error=>errors.push(error.message));
   await signIn(page,'test_super');
-  await page.locator('[data-page="teacher_attendance"]').click();
+  await navigate(page,'teacher_attendance');
   await page.locator('#personnelAttendanceDate').waitFor();
   await page.locator('#personnelAttendanceDate').fill('2026-03-02');
   await wait(async()=> (await page.locator('#personnelAttendanceCount').textContent()).includes('2 records'));
@@ -33,7 +34,7 @@ const signIn=async(page,username)=>{
   await dialog.getByRole('button',{name:'Save attendance'}).click();
   await dialog.waitFor({state:'detached'});
   await wait(async()=> (await teacherRow.textContent()).includes('present'));
-  await page.locator('[data-page="staff_attendance"]').click();
+  await navigate(page,'staff_attendance');
   await page.locator('#personnelAttendanceDate').fill('2026-03-02');
   await wait(async()=> (await page.locator('#personnelAttendanceCount').textContent()).includes('1 records'));
   assert.match(await page.locator('#main').textContent(),/PAT_S1/);
@@ -48,7 +49,7 @@ const signIn=async(page,username)=>{
   await dialog.waitFor({state:'detached'});
   await wait(async()=> (await page.locator('#personnelAttendanceCount').textContent()).includes('1 records'));
   await page.reload();
-  await page.locator('[data-page="staff_attendance"]').click();
+  await navigate(page,'staff_attendance');
   await page.locator('#personnelAttendanceDate').fill('2026-03-03');
   await wait(async()=> (await page.locator('#personnelAttendanceCount').textContent()).includes('1 records'));
   assert.match(await page.locator('#main').textContent(),/PAT_S1/);
@@ -56,7 +57,7 @@ const signIn=async(page,username)=>{
   const scoped=await browser.newContext(),zone=await scoped.newPage();
   zone.on('pageerror',error=>errors.push(error.message));
   await signIn(zone,'test_zone');
-  await zone.locator('[data-page="teacher_attendance"]').click();
+  await navigate(zone,'teacher_attendance');
   await zone.locator('#personnelAttendanceDate').fill('2026-03-02');
   await wait(async()=> (await zone.locator('#personnelAttendanceCount').textContent()).includes('1 records'));
   assert.equal(await zone.locator('#personnelAttendanceAdd').count(),0);

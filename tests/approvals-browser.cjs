@@ -1,5 +1,6 @@
 const assert=require('node:assert/strict');
 const {chromium}=require('playwright');
+const navigate=require('./browser-navigation.cjs');
 if(process.env.LEARN_INTEGRATION_TEST!=='1')throw new Error('Disposable CI fixtures only');
 const base='http://127.0.0.1:8099/';
 const wait=async(check)=>{for(let i=0;i<80;i++){if(await check())return;await new Promise(r=>setTimeout(r,100));}throw new Error('Approvals UI timed out');};
@@ -19,7 +20,7 @@ const create=async(page,code,name)=>page.evaluate(async({code,name})=>{
     const context=await browser.newContext(),page=await context.newPage();page.on('pageerror',error=>errors.push(error.message));
     await login(page,'test_super');
     const id=await create(page,'REVIEW_UI_01','<img src=x onerror="window.reviewXss=true">');
-    await page.locator('[data-page="approvals"]').click();await page.locator('#approvalsCount').waitFor();
+    await navigate(page,'approvals');await page.locator('#approvalsCount').waitFor();
     await page.locator('#approvalsSearch').fill('REVIEW_UI_01');assert.equal(await page.locator('#approvalsTable tbody tr').count(),1);
     assert.equal(await page.locator('#approvalsTable img').count(),0);assert.equal(await page.evaluate(()=>window.reviewXss),undefined);
     let posts=0;page.on('request',request=>{if(request.url().endsWith('/approval_decide.php'))posts++;});
@@ -41,10 +42,10 @@ const create=async(page,code,name)=>page.evaluate(async({code,name})=>{
     await wait(async()=>(await page.locator('#approvalsTable').textContent()).includes('No pending branches match'));
     assert.match(await page.locator('#main').textContent(),/Ready <script>safe note<\/script>/);
     assert.equal(await page.locator('#main script').count(),0);
-    await page.locator('[data-page="branches"]').click();
+    await navigate(page,'branches');
     const branch=page.locator('#branchTable tbody tr').filter({hasText:'REVIEW_UI_01'});
     assert.match(await branch.textContent(),/Active/);assert.match(await branch.textContent(),/Updated Review Branch/);
-    await page.reload();await page.locator('[data-page="approvals"]').click();await page.locator('#approvalsCount').waitFor();
+    await page.reload();await navigate(page,'approvals');await page.locator('#approvalsCount').waitFor();
     assert.match(await page.locator('#main').textContent(),/REVIEW_UI_01/);
     await create(page,'REVIEW_UI_02','Browser rejected branch');await page.locator('#approvalsRefresh').click();await page.locator('#approvalsCount').waitFor();
     await page.locator('#approvalsSearch').fill('REVIEW_UI_02');
@@ -67,7 +68,7 @@ const create=async(page,code,name)=>page.evaluate(async({code,name})=>{
     await context.close();
     for(const username of ['test_zone','test_branch','test_department']){
       const limited=await browser.newContext(),limitedPage=await limited.newPage();limitedPage.on('pageerror',error=>errors.push(error.message));
-      await login(limitedPage,username);await limitedPage.locator('[data-page="approvals"]').click();
+      await login(limitedPage,username);await navigate(limitedPage,'approvals');
       assert.match(await limitedPage.locator('#main').textContent(),/does not have access/);
       assert.equal(await limitedPage.locator('[data-approval-id]').count(),0);await limited.close();
     }

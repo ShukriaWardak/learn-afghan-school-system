@@ -1,0 +1,64 @@
+const assert=require('node:assert/strict');
+const {chromium}=require('playwright');
+const navigate=require('./browser-navigation.cjs');
+if(process.env.LEARN_INTEGRATION_TEST!=='1')throw new Error('Disposable CI only');
+const base='http://127.0.0.1:8099/';
+const signIn=async(page,username)=>{
+  await page.goto(base+'index.html');
+  await page.locator('#loginForm').waitFor();
+  await page.locator('#loginUser').fill(username);
+  await page.locator('#loginPassword').fill('Disposable-test-password-2026');
+  await page.locator('#submitLogin').click();
+  await page.locator('#authScreen').waitFor({state:'detached'});
+};
+const expanded=page=>page.locator('#nav .ref-more-menu').evaluate(element=>element.open);
+(async()=>{
+  const browser=await chromium.launch({headless:true}),errors=[];
+  try{
+    const context=await browser.newContext({viewport:{width:1280,height:800}});
+    const page=await context.newPage();page.on('pageerror',error=>errors.push(error.message));
+    await signIn(page,'test_super');
+    assert.equal(await expanded(page),false,'More Modules initially matches the collapsed reference layout');
+    await navigate(page,'teacher_attendance');
+    await page.locator('#personnelAttendanceDate').waitFor();
+    assert.equal(await expanded(page),true,'Selected advanced page stays expanded after the navigation re-render');
+    assert.equal(await page.locator('#nav [data-page="teacher_attendance"]').getAttribute('aria-current'),'page');
+    await navigate(page,'staff_attendance');
+    await page.locator('#personnelAttendanceDate').waitFor();assert.equal(await expanded(page),true);
+    await navigate(page,'approvals');
+    await page.locator('#approvalsCount').waitFor();assert.equal(await expanded(page),true);
+    await navigate(page,'students');
+    await page.locator('#studentsCount').waitFor();assert.equal(await expanded(page),true,'An explicitly expanded menu stays open on primary pages');
+    // Native summary keyboard interaction must keep working after navigation.
+    const summary=page.locator('#nav .ref-more-menu > summary');
+    await summary.focus();await page.keyboard.press('Enter');assert.equal(await expanded(page),false);
+    await navigate(page,'teachers');
+    assert.equal(await expanded(page),false,'An explicitly closed menu stays closed on primary pages');
+    await summary.focus();await page.keyboard.press('Enter');assert.equal(await expanded(page),true);
+    const scroll=await page.locator('#nav').evaluate(element=>({overflow:getComputedStyle(element).overflowY,height:element.clientHeight,content:element.scrollHeight}));
+    assert.equal(scroll.overflow,'auto');assert.ok(scroll.content>scroll.height,'The long menu has a user-scrollable viewport');
+    await navigate(page,'backup');
+    assert.equal(await page.locator('#nav [data-page="backup"]').getAttribute('aria-current'),'page');
+    assert.equal(await expanded(page),true);
+    await context.close();
+    const mobile=await browser.newContext({viewport:{width:390,height:844}});
+    const phone=await mobile.newPage();phone.on('pageerror',error=>errors.push(error.message));
+    await signIn(phone,'test_super');
+    await phone.locator('#menu').click();await navigate(phone,'teacher_attendance');
+    await phone.locator('#personnelAttendanceDate').waitFor();
+    assert.equal(await phone.locator('#sidebar').evaluate(element=>element.classList.contains('open')),false,'Choosing a page closes the mobile drawer');
+    assert.equal(await expanded(phone),true);
+    await phone.locator('#menu').click();await navigate(phone,'staff_attendance');
+    await phone.locator('#personnelAttendanceDate').waitFor();assert.equal(await expanded(phone),true);
+    await mobile.close();
+    const scoped=await browser.newContext(),zone=await scoped.newPage();
+    zone.on('pageerror',error=>errors.push(error.message));
+    await signIn(zone,'test_zone');
+    assert.equal(await zone.locator('#nav .ref-more-menu').count(),0,'Scoped roles retain their original navigation');
+    await navigate(zone,'teacher_attendance');await zone.locator('#personnelAttendanceDate').waitFor();
+    assert.equal(await zone.locator('#personnelAttendanceAdd').count(),0);
+    await scoped.close();
+    assert.deepEqual(errors,[]);
+    console.log('PASS: expandable dashboard navigation, active-route visibility, preserved menu state, keyboard toggle, scrollable long menu, mobile drawer and scoped-role access');
+  }finally{await browser.close();}
+})().catch(error=>{console.error(error);process.exit(1);});

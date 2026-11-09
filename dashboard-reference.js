@@ -39,9 +39,10 @@ function referenceNavigation(){
   ["reports","▥","Reports"],["settings","⚙","Settings"]
  ];
  const moreItems=NAV.flatMap(group=>group[1]).filter(item=>!mainItems.some(primary=>primary[0]===item[0]));
- const link=([key,icon,label])=>'<button type="button" class="nav-link '+(current===key?'active':'')+'" data-page="'+key+'"><span class="nav-symbol" aria-hidden="true">'+icon+'</span>'+escapeHtml(label)+'</button>';
+ const moreOpen=moreItems.some(item=>item[0]===current)||Boolean($('#nav .ref-more-menu')?.open);
+ const link=([key,icon,label])=>'<button type="button" class="nav-link '+(current===key?'active':'')+'" data-page="'+key+'"'+(current===key?' aria-current="page"':'')+'><span class="nav-symbol" aria-hidden="true">'+icon+'</span>'+escapeHtml(label)+'</button>';
  $("#nav").innerHTML='<div class="ref-main-menu">'+mainItems.map(link).join("")+'</div>'
-    +'<details class="ref-more-menu"><summary>More Modules</summary>'+moreItems.map(link).join("")+'</details>';
+    +'<details class="ref-more-menu"'+(moreOpen?' open':'')+'><summary>More Modules</summary>'+moreItems.map(link).join("")+'</details>';
  document.querySelectorAll("[data-page]").forEach(b=>b.onclick=()=>go(b.dataset.page));
 }
 navigation=referenceNavigation;
