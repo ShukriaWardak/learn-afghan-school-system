@@ -20,6 +20,7 @@ jobs:
           node --check personnel-attendance.js
           node --check reports.js
           node --check approvals.js
+          node --check dashboard-reference.js
       - name: PHP syntax
         run: |
           php -l check-setup.php
@@ -100,6 +101,7 @@ jobs:
           php -S 127.0.0.1:8099 -t . > /tmp/learn-php-test.log 2>&1 &
           server_pid=$!
           trap 'kill "$server_pid"' EXIT
+          node tests/dashboard-navigation-browser.cjs
           node tests/students-browser.cjs
           node tests/attendance-integration.cjs
           node tests/attendance-browser.cjs

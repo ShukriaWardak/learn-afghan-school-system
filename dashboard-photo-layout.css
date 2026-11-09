@@ -10,6 +10,9 @@ body{background:#e6f0ff}
 .app .ref-main-menu{margin-top:4px;position:relative;z-index:1}
 .app .sidebar .nav-link{display:flex;align-items:center;width:100%;text-align:left;border-radius:13px;color:#fff;font-size:16px;font-weight:650;padding:11px 14px;margin:3px 0;min-height:48px}
 .app .sidebar .nav-link.active{background:#0879ff;box-shadow:0 3px 10px #00225544}
+.app .sidebar #nav{position:relative;z-index:1;flex:1 1 auto;min-height:0;overflow-y:auto;overscroll-behavior:contain}
+.app .sidebar .brand,.app .sidebar .side-bottom{flex-shrink:0}
+.app .sidebar .ref-more-menu summary:focus-visible{outline:2px solid #8ac3fb;outline-offset:2px}
 .app .sidebar .nav-symbol{font-size:23px;width:41px;display:inline-flex;align-items:center;justify-content:center}
 .app .sidebar .side-bottom{position:relative;z-index:1;margin-top:auto;border:0;background:transparent;padding:14px 5px;gap:10px}
 .app .sidebar .side-bottom .avatar{width:65px;height:65px;font-size:18px;border-radius:50%;background:linear-gradient(140deg,#fff,#9ac3ef);color:#16458d;border:3px solid #ffffff55;display:grid;place-items:center;position:relative;flex-shrink:0}
