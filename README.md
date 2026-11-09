@@ -1,31 +1,34 @@
 # LEARN Afghan — Central Administration
 
-This working branch (`feature/branch-approvals-2026-11-04`) includes the branded login, student/personnel registries, both attendance modules, aggregate reports, Windows setup helper and pending branch approvals. It builds on the stacked draft PRs and is not merged into `main`. See [PROJECT_STATUS.md](PROJECT_STATUS.md) for the remaining sections and [database/APPROVALS_SETUP.md](database/APPROVALS_SETUP.md) for the new review queue. The team's end-to-end XAMPP acceptance remains unverified.
+This Finance development increment (`feature/finance-dashboard-20261109`) builds on the navigation fixes in PR 15, including the latest reference dashboard and graduation photo. It includes the branded login, student/personnel registries, attendance, aggregate reports, branch approvals and a sample AFN Finance cashbook. It is a review branch stacked on PR 15, not merged into the shared working branch or `main`. See [PROJECT_STATUS.md](PROJECT_STATUS.md) and [Finance setup](database/FINANCE_SETUP.md). The team's end-to-end XAMPP acceptance remains unverified.
+
+See [FINANCE_VERIFICATION.md](FINANCE_VERIFICATION.md) for isolated PHP/database/browser checks and their limits. Check GitHub Actions for the exact commit before relying on its CI result.
 
 ## Current progress
 
 | Area | Code available on this branch | Verification / remaining work |
 | --- | --- | --- |
-| Interface | Dashboard, navigation, search and zone filters | Browser interaction testing pending |
+| Interface | Reference dashboard/photo, expandable navigation, search and zone filters, responsive Finance page | Integrated source includes the PR 15 navigation fixes; native XAMPP acceptance remains |
 | Database foundation | zones, branches, departments, users, audit_events, login_attempts | Verify both SQL imports in local MySQL |
-| Authentication | Sign-in, sign-out, sessions, CSRF and login throttling | Local login and role-boundary tests pending |
+| Authentication | Sign-in, sign-out, sessions, CSRF and login throttling | Isolated API/browser checks passed; team installation acceptance remains |
 | Local setup | Browser/CLI checks for PHP, driver, configuration, connection, tables/columns and administrator readiness; readable sign-in/setup cards | Read-only and restricted to localhost for browser access; see LOCAL_SETUP.md |
 | Zone / branch administration | Scoped listings; super-admin zone/branch creation and branch editing | Verify database persistence and audit rows |
 | Users | Super-admin read-only directory, first 200 accounts | Invitations, editing, reset and MFA are not implemented |
 | Audit | Transactional logs for zone/branch writes; recent 100 events | Verify against a running database |
 | CSV | Authorized branch export; branch-page search/zone filters; formula neutralization | Export helper checks passed; browser download testing pending |
-| Reports | Live scoped school/branch metrics, student/personnel status and attendance summary by date, aggregate CSV | Requires existing migrations 001–006; automated CI and local acceptance testing pending |
+| Reports | Live scoped school/branch metrics, student/personnel status and attendance summary by date, aggregate CSV | Requires schema and migrations 002–006; isolated API/browser checks passed; XAMPP acceptance remains |
 | Branch approvals | Super-admin pending queue, approve/reject, review notes/history and stale-review protection with transactional audit | Uses existing branch/audit tables; departmental and financial approvals remain planned |
 | Departments | Super-admin directory, create and rename; transactional audit events | Uses existing departments table; parent assignments preserved |
 | Teachers / Staff | Scoped directories, search/status filters, super-admin create/edit/inactivate, stale-edit protection | Requires migration 003; personnel records do not create login accounts |
 | Branch admins | Super-admin read-only directory of branch-admin accounts | Account provisioning/editing still pending |
 | Students | Scoped directory, code/name/grade search, branch/status filters, super-admin registration/editing, conflict recovery and audit logging | Requires migration 004; automated API and browser tests are included; XAMPP verification pending |
 | Student attendance | Daily read/write registry with role-scoped reads, super-admin audited updates, and date/status filters | Requires migration 005; CI passed in PR #7; XAMPP confirmation pending |
-| Teacher/staff attendance | Daily role-scoped teacher and staff attendance with audited super-admin writes and conflict checks | Requires migration 006; CI and XAMPP confirmation pending |
-| Other modules | Planning screens | Finance, payroll, health and other department-specific forms are not implemented |
+| Teacher/staff attendance | Daily role-scoped teacher and staff attendance with audited super-admin writes and conflict checks | Requires migration 006; isolated API/browser checks passed; XAMPP confirmation pending |
+| Finance | AFN income/expense cashbook, assigned-area Finance add/edit, super-admin read-only view, filtered decimal totals, pagination and transactional audit | Requires migration 007; final fields, real-account provisioning, payroll, reconciliation, financial approvals and exports remain |
+| Other modules | Planning screens | Payroll, health and other department-specific forms are not implemented |
 | Operations | Setup instructions and syntax-check workflow | PDF/Excel reporting, backups/recovery and production readiness remain |
 
-The proposal targets **3 zones and 25 branches**. These are planned scope, not verified live counts. No official zone/branch records or default accounts are seeded. The dashboard's live counts reflect only records accessible to the signed-in account.
+The proposal targets **3 zones and 25 branches**. The super-admin reference dashboard displays institution-provided totals of **4,545 students, 81 teachers and 25 branches**, clearly labelled as reference totals rather than counts from the local database. Scoped operational modules read only records accessible to the signed-in account. No official zone/branch records or default accounts are seeded.
 
 ## View the current result locally
 
@@ -35,19 +38,18 @@ Use the existing project folder in XAMPP's `htdocs`. In that folder, first run:
 git status
 ```
 
-If there are local edits, commit or otherwise preserve them before switching branches. Then run:
+Preserve local edits and resolve any existing merge conflicts before switching branches. After the review branch is available on GitHub, a first checkout can use:
 
 ```bash
 git fetch origin
-git switch feature/branch-approvals-2026-11-04
-git pull --ff-only origin feature/branch-approvals-2026-11-04
+git switch --track origin/feature/finance-dashboard-20261109
 ```
 
 1. Start Apache and MySQL in XAMPP (PHP 8.1+).
-2. For a new empty installation, apply `database/schema.sql`, then migrations `002_login_attempts.sql`, `003_personnel.sql`, `004_students.sql`, `005_student_attendance.sql` and `006_personnel_attendance.sql` in order. Inspect an existing installation and its data before applying any missing migration; the full schema has 10 tables.
+2. For a new empty installation, apply `database/schema.sql`, then migrations `002_login_attempts.sql`, `003_personnel.sql`, `004_students.sql`, `005_student_attendance.sql`, `006_personnel_attendance.sql` and `007_finance.sql` in order. Inspect an existing installation and obtain the database owner's approval before applying a missing migration to a populated database; the Finance schema has 11 tables.
 3. Copy `backend/config.example.php` to `backend/config.local.php` and configure a restricted local database account. Never commit this file.
 4. Use an authorized local test account. For an empty installation, follow the CLI first-admin instructions in [backend/README.md](backend/README.md).
-5. If the folder is named `learn-afghan-school-system`, open **http://localhost/learn-afghan-school-system/index.html**. Adjust the folder name if necessary.
+5. For the supplied nested Windows folder, open **http://localhost/learn_afghan_school/learn-afghan-school-system/index.html**. Adjust the URL to match the folder under `htdocs` if necessary.
 6. Sign in. With an empty database, zero zones/branches is expected. Add a test zone, add a test branch, edit it, reload, and verify audit history using disposable local data.
 
 If setup or login is blocked, open `check-setup.php` using the same folder URL as `index.html`. It shows the project directory being served and identifies missing setup steps, without displaying credentials or changing records. It can run on PHP 8.0 to explain the app's PHP 8.1 requirement. See [LOCAL_SETUP.md](LOCAL_SETUP.md) for Windows/macOS instructions. An existing administrator detected by this page still needs to be tested with the correct sign-in credentials.
@@ -61,6 +63,10 @@ As a super administrator, open **Departments**, add an approved code/name, then 
 Zone and branch administrators can read personnel only within their assigned zone or branch. Department users have no personnel access yet. Only super administrators can write records or view the central department and branch-admin directories. Staff records are separate from login accounts, and this first registry does not include payroll, attendance, contact details or identity documents. The personnel and branch-admin directories display at most 1,000 records; filters search those loaded records.
 
 Run `node tests/registry.cjs` for isolated directory checks. The GitHub Actions integration job creates a disposable MySQL database and checks creation, editing, duplicate/invalid input, stale edits, CSRF, role boundaries, audit events and logout through the PHP APIs. `tests/setup-integration.php` refuses an existing database and is for disposable CI only. Check the workflow result for the exact commit before treating integration tests as passed.
+
+### Finance
+
+The sample Finance form supports AFN income/expenses, branch or central-office assignment, payer/payee, category, payment method, description, receipt reference and notes. Active Finance department members add/edit within their assigned area; super administrators read all Finance entries. Edits require a reason and reject stale versions. Amounts and totals remain decimal strings; a submission UUID protects retried creates, and records/audit events commit together. The five planned Finance staff accounts are not seeded or provisioned by this update. See [database/FINANCE_SETUP.md](database/FINANCE_SETUP.md) for permissions, installation and acceptance checks.
 
 ### Reports & Export
 

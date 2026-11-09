@@ -38,12 +38,12 @@ function verifyCsrf(): void {
 function authenticatedUser(PDO $pdo): array {
  $uid=$_SESSION['user_id']??null;
  if (!is_int($uid) || $uid<1) respond(401,['error'=>'Authentication required']);
- $stmt=$pdo->prepare('SELECT id,username,display_name,role,zone_id,branch_id,department_id,active FROM users WHERE id=? LIMIT 1');
+ $stmt=$pdo->prepare('SELECT u.id,u.username,u.display_name,u.role,u.zone_id,u.branch_id,u.department_id,u.active,d.code AS department_code FROM users u LEFT JOIN departments d ON d.id=u.department_id WHERE u.id=? LIMIT 1');
  $stmt->execute([$uid]);$user=$stmt->fetch();
  if (!$user || (int)$user['active']!==1) {$_SESSION=[];respond(401,['error'=>'Authentication required']);}
  if ($user['role'] !== ($_SESSION['role']??null)) {$_SESSION=[];respond(401,['error'=>'Session expired']);}
  return $user;
 }
 function publicUser(array $u): array {
- return ['id'=>(int)$u['id'],'username'=>$u['username'],'display_name'=>$u['display_name'],'role'=>$u['role'],'zone_id'=>$u['zone_id']===null?null:(int)$u['zone_id'],'branch_id'=>$u['branch_id']===null?null:(int)$u['branch_id']];
+ return ['id'=>(int)$u['id'],'username'=>$u['username'],'display_name'=>$u['display_name'],'role'=>$u['role'],'zone_id'=>$u['zone_id']===null?null:(int)$u['zone_id'],'branch_id'=>$u['branch_id']===null?null:(int)$u['branch_id'],'department_id'=>$u['department_id']===null?null:(int)$u['department_id'],'department_code'=>$u['department_code']??null];
 }

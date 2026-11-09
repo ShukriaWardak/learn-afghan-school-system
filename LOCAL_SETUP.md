@@ -6,7 +6,7 @@ For the previously supplied nested project folder, the link is:
 
 http://localhost/learn_afghan_school/learn-afghan-school-system/check-setup.php
 
-The page shows the exact project directory being served and checks PHP, PDO MySQL, `backend/config.local.php`, the database connection, the eight application tables and their required columns, and whether an active administrator exists. It performs no database writes. Credentials and account names are excluded from its output.
+The page shows the exact project directory being served and checks PHP, PDO MySQL, `backend/config.local.php`, the database connection, the eleven application tables and their required columns, and whether an active administrator exists. It performs no database writes. Credentials and account names are excluded from its output.
 
 The page is restricted to direct localhost requests. You can also run it from the project folder with XAMPP's PHP executable:
 
@@ -33,7 +33,7 @@ Command-line output is JSON with a `ready` flag and individual checks. A pass co
 | Configuration missing | Place `config.local.php` beside `backend/bootstrap.php`, using exactly that filename. Use the project directory displayed on this page. |
 | Configuration invalid | Compare the PHP syntax and the five setting keys with `backend/config.example.php`. |
 | Connection | Start MySQL/MariaDB and verify the configured host, port, database name and credentials locally. |
-| Table missing | Apply the indicated schema/migration file in order: schema, 002, 003, then 004. |
+| Table missing | After inspection and the database owner's approval for a populated database, apply the indicated schema/migration in order: schema, then 002 through 007. |
 | Columns missing | Compare the existing table's Structure with the indicated source file before modifying it. `CREATE TABLE IF NOT EXISTS` does not upgrade an incompatible existing table. |
 | First administrator missing | Run the existing first-admin CLI helper using the instructions in `backend/README.md`. |
 | Existing administrators inactive | Review the existing account; the first-admin helper does not replace existing administrator records. |

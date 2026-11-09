@@ -28,3 +28,33 @@ dialog.modal::backdrop { background: #10284998; }
 
 .approval-note{white-space:pre-wrap;overflow-wrap:anywhere;max-width:28rem}
 
+
+/* AFN sample finance register */
+.finance-page{color:#173456;--muted:#526680;--ink:#173456}
+.finance-page .page-top h1,.finance-page .panel h3,.finance-page .metric strong{color:#173456}
+.finance-page .eyebrow{color:#305b8b}
+.finance-page .muted,.finance-page .panel small,.finance-page .metric small,.finance-page .metric-title{color:#526680}
+.finance-page .panel,.finance-page .metric{background:#fff;color:#173456;border-color:#c6d7eb;box-shadow:0 5px 18px #184e8714}
+.finance-page .note{background:#eef6ff;color:#244b75;border-color:#bbd6f3}
+.finance-page .empty{color:#526680}
+.finance-page th{background:#f2f6fc;color:#405b7d}
+.finance-page td,.finance-page th{border-color:#dbe5f2}
+.finance-page td{color:#173456}
+.finance-page .metrics{grid-template-columns:repeat(3,minmax(0,1fr))}
+.finance-page .field,.finance-modal .field{background:#f7faff;color:#173456;border-color:#94abc7}
+.finance-page .field:focus,.finance-modal .field:focus{outline:2px solid #1b64ae;outline-offset:2px}
+#financeFilters{align-items:flex-end}
+#financeFilters label{display:grid;gap:5px;flex:1 1 160px;min-width:0;color:#24415f}
+#financeFilters .field{width:100%;min-width:0}
+.finance-money{white-space:nowrap;font-variant-numeric:tabular-nums}
+.finance-note{white-space:pre-wrap;overflow-wrap:anywhere;max-width:24rem}
+.finance-metrics .metric strong{font-size:clamp(1rem,1.8vw,1.7rem);overflow-wrap:anywhere}
+dialog.finance-modal{max-width:780px;width:min(780px,calc(100vw - 2rem));max-height:90dvh;overflow-y:auto;background:#fff;color:#173456;border-color:#94abc7}
+.finance-modal .form-grid label{color:#24415f}
+.finance-modal .muted{color:#526680}
+.finance-modal .field{width:100%;min-width:0}
+.finance-modal textarea.field{margin-top:5px;resize:vertical}
+.finance-modal .auth-error{color:#a51e32}
+.finance-wide{grid-column:1/-1}
+.finance-pagination{margin-top:1rem}
+@media(max-width:700px){.finance-page .metrics{grid-template-columns:1fr}.finance-modal{padding:20px}.finance-modal .modal-actions{flex-wrap:wrap}}

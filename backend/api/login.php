@@ -14,7 +14,7 @@ $cutoff=date('Y-m-d H:i:s',time()-900);
 $check=$pdo->prepare('SELECT COUNT(*) FROM login_attempts WHERE attempted_at>=? AND (username=? OR ip_hash=?)');
 $check->execute([$cutoff,$username,$ipHash]);
 if ((int)$check->fetchColumn()>=8) respond(429,['error'=>'Too many attempts. Try later.']);
-$stmt=$pdo->prepare('SELECT id,username,display_name,password_hash,role,zone_id,branch_id,department_id,active FROM users WHERE username=? LIMIT 1');
+$stmt=$pdo->prepare('SELECT u.id,u.username,u.display_name,u.password_hash,u.role,u.zone_id,u.branch_id,u.department_id,u.active,d.code AS department_code FROM users u LEFT JOIN departments d ON d.id=u.department_id WHERE u.username=? LIMIT 1');
 $stmt->execute([$username]);
 $user=$stmt->fetch();
 $valid=$user && (int)$user['active']===1 && password_verify($password,$user['password_hash']);

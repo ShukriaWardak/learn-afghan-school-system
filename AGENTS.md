@@ -4,12 +4,14 @@ This repository is a **development prototype**, not an approved production infor
 
 ## Architecture
 
-- The frontend is plain HTML, CSS and JavaScript: `index.html`, `app.js`, `live.js`, `registry.js`, `students.js`, `attendance.js`, `personnel-attendance.js`, `reports.js`, `approvals.js`, `styles.css`, `dashboard-theme.css`, `reference-layout.css`, `login-theme.css`.
+- The frontend is plain HTML, CSS and JavaScript: `index.html`, `app.js`, `live.js`, `registry.js`, `students.js`, `attendance.js`, `personnel-attendance.js`, `reports.js`, `approvals.js`, `finance.js`, `styles.css`, `dashboard-theme.css`, `reference-layout.css`, `login-theme.css`.
 - The authenticated backend uses PHP endpoints under `backend/api/`, including `login.php`, `session.php`, `logout.php`, zones, branches, departments, personnel and students.
-- MySQL schema and migrations are in `database/`: `schema.sql`, `002_login_attempts.sql`, `003_personnel.sql`, `004_students.sql`, `005_student_attendance.sql`, `006_personnel_attendance.sql`.
+- MySQL schema and migrations are in `database/`: `schema.sql`, `002_login_attempts.sql`, `003_personnel.sql`, `004_students.sql`, `005_student_attendance.sql`, `006_personnel_attendance.sql`, `007_finance.sql`.
 - The local, gitignored credentials file is `backend/config.local.php`; see `backend/config.example.php` for the template.
 - The report endpoints are `backend/api/reports_summary.php` and `backend/api/reports_export.php`, backed by read-only SQL in `backend/reporting.php` and `reports.js`. Reports are branch aggregates only, scoped to roles, and CSV cells must be formula-safe.
 - Branch approvals use `backend/api/approvals.php`, `backend/api/approval_decide.php` and `backend/branch_approvals.php`. Only super admins review pending branch activation. Preserve review-version checks, role/CSRF enforcement and atomic audit/status updates. This queue does not define departmental or financial approval policy.
+- The sample AFN Finance ledger uses `backend/finance.php`, `backend/api/finance.php`, `backend/api/finance_save.php` and `finance.js`. Active Finance members can add/edit within their assignments; super admins are read-only. Preserve decimal strings, retry keys, version checks, transactional audits and the absence of deletion. See `database/FINANCE_SETUP.md` for provisional fields and limits.
+- The reference dashboard is in `dashboard-reference.js`, `dashboard-reference.css` and `dashboard-photo-layout.css`. Preserve its graduation photo, primary routes, expandable/scrollable advanced navigation and role-specific navigation. Institution-provided totals (4,545 students, 81 teachers, 25 branches) must remain labelled as reference values, not live SQL counts. Scope Finance presentation rules to its page and dialog.
 - The branded split-screen sign-in is rendered by `Live.showLogin()` in `live.js` and styled by `login-theme.css`. Preserve the existing username/password form IDs and `csrf.php` / `login.php` authentication contract. Do not replace authentication with localStorage or hardcoded credentials.
 
 ## Safety and approvals
@@ -42,6 +44,7 @@ This repository is a **development prototype**, not an approved production infor
 - `node tests/registry.cjs`
 - `node tests/students.cjs`
 - `node tests/approvals.cjs`
+- `node tests/finance.cjs`
 - `php -l` for modified PHP files.
 
 CI integration/browser tests use disposable fixtures with `LEARN_INTEGRATION_TEST=1`. **Never run `tests/setup-integration.php` against an existing local school database.** The Playwright browser suite in `tests/students-browser.cjs` also checks the branded login page.

@@ -1,0 +1,31 @@
+USE learn_afghan;
+-- Sample AFN cashbook. No accounts or transaction records are seeded.
+CREATE TABLE IF NOT EXISTS finance_entries (
+ id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+ entry_date DATE NOT NULL,
+ entry_type ENUM('income','expense') NOT NULL,
+ category VARCHAR(45) NOT NULL,
+ amount DECIMAL(14,2) NOT NULL,
+ currency CHAR(3) NOT NULL DEFAULT 'AFN',
+ branch_id INT UNSIGNED NULL,
+ counterparty VARCHAR(180) NOT NULL,
+ payment_method ENUM('cash','bank_transfer','mobile_money') NOT NULL,
+ receipt_reference VARCHAR(80) NOT NULL DEFAULT '',
+ description VARCHAR(500) NOT NULL,
+ notes VARCHAR(500) NOT NULL DEFAULT '',
+ version INT UNSIGNED NOT NULL DEFAULT 1,
+ created_by BIGINT UNSIGNED NULL,
+ updated_by BIGINT UNSIGNED NULL,
+ request_key CHAR(36) CHARACTER SET ascii COLLATE ascii_bin NOT NULL UNIQUE,
+ request_hash CHAR(64) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
+ created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+ updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+ FOREIGN KEY(branch_id) REFERENCES branches(id),
+ FOREIGN KEY(created_by) REFERENCES users(id) ON DELETE SET NULL,
+ FOREIGN KEY(updated_by) REFERENCES users(id) ON DELETE SET NULL,
+ CONSTRAINT chk_finance_amount CHECK(amount > 0),
+ CONSTRAINT chk_finance_currency CHECK(currency = 'AFN'),
+ INDEX idx_finance_date(entry_date,id),
+ INDEX idx_finance_type_date(entry_type,entry_date),
+ INDEX idx_finance_branch(branch_id)
+) ENGINE=InnoDB DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
