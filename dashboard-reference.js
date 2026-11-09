@@ -8,7 +8,6 @@ function referenceOverview(){
  const attendance="—", students="4,545",teachers="81", staff="—",finance="—";
  const card=(icon,title,value,cls)=>'<div class="ref-stat '+cls+'"><span class="ref-stat-icon" aria-hidden="true">'+icon+'</span><span class="ref-stat-label">'+title+'</span><strong>'+value+'</strong></div>';
  const quick=(label,icon,target)=>'<button type="button" class="ref-quick" data-go="'+target+'"><span aria-hidden="true">'+icon+'</span>'+label+'</button>';
- const first=person.trim().split(/\s+/)[0]||"Admin";
  const sample=[18,33,49,59,70,84,97];
  const line=sample.map((y,i)=>(i?'L':'M')+(24+i*44)+','+(120-y)).join(' ');
  const dots=sample.map((y,i)=>'<circle cx="'+(24+i*44)+'" cy="'+(120-y)+'" r="4.5"/>').join('');
@@ -26,5 +25,26 @@ function referenceOverview(){
 const originalLiveOverview=Live.overview.bind(Live);
 overview=referenceOverview;
 Live.overview=function(){return this.user?.role==="super_admin"?referenceOverview():originalLiveOverview();};
+
+/* The nine primary menu entries follow the supplied screenshot. Advanced operational
+   routes remain available under More Modules; no PHP endpoint or authorization is changed. */
+const originalNavigation=navigation;
+function referenceNavigation(){
+ if(Live.active && Live.user?.role!=="super_admin")return originalNavigation();
+ const mainItems=[
+  ["overview","⌂","Dashboard"],["students","♧","Students"],
+  ["teachers","🎓","Teachers"],["users","♙","Users & Roles"],
+  ["staff","▣","HR"],["finance","▥","Finance"],
+  ["attendance","▦","Attendance"],["forms","▤","Classes"],
+  ["reports","▥","Reports"],["settings","⚙","Settings"]
+ ];
+ const moreItems=NAV.flatMap(group=>group[1]).filter(item=>!mainItems.some(primary=>primary[0]===item[0]));
+ const link=([key,icon,label])=>'<button type="button" class="nav-link '+(current===key?'active':'')+'" data-page="'+key+'"><span class="nav-symbol" aria-hidden="true">'+icon+'</span>'+escapeHtml(label)+'</button>';
+ $("#nav").innerHTML='<div class="ref-main-menu">'+mainItems.map(link).join("")+'</div>'
+    +'<details class="ref-more-menu"><summary>More Modules</summary>'+moreItems.map(link).join("")+'</details>';
+ document.querySelectorAll("[data-page]").forEach(b=>b.onclick=()=>go(b.dataset.page));
+}
+navigation=referenceNavigation;
+
 /* Re-render after the new view is registered. Server session loading remains owned by Live. */
 if(!document.documentElement.classList.contains("auth-required"))render();
