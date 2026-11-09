@@ -1,0 +1,56 @@
+/* Reference screenshot layout (2026-11-09). Design-only changes. */
+body{background:#e6f0ff}
+.app .sidebar{width:270px;flex-basis:270px;min-height:100dvh;background:linear-gradient(160deg,#061c4a 0%,#062d78 58%,#005fe0 78%,#05265d 95%);border-radius:0 22px 22px 0;padding:24px 14px;overflow:hidden;position:sticky;top:0}
+.app .sidebar::before{content:"";position:absolute;pointer-events:none;left:-30px;right:-30px;bottom:115px;height:65px;border-top:8px solid #f9c54f;border-radius:52% 48% 0 0;transform:rotate(-7deg);box-shadow:0 -8px 0 #0879e9}
+.app .sidebar .brand{padding:0 7px 30px;align-items:center}
+.app .brand strong{font-family:inherit;font-size:19px;color:#fff;line-height:1.15}
+.app .brand small{font-size:11px;color:#dce9ff;line-height:1.4}
+.app .brand-mark{width:66px;height:58px;flex-shrink:0}
+.app .brand-mark svg{width:62px;height:55px}
+.app .ref-main-menu{margin-top:4px;position:relative;z-index:1}
+.app .sidebar .nav-link{display:flex;align-items:center;width:100%;text-align:left;border-radius:13px;color:#fff;font-size:16px;font-weight:650;padding:11px 14px;margin:3px 0;min-height:48px}
+.app .sidebar .nav-link.active{background:#0879ff;box-shadow:0 3px 10px #00225544}
+.app .sidebar .nav-symbol{font-size:23px;width:41px;display:inline-flex;align-items:center;justify-content:center}
+.app .sidebar .side-bottom{position:relative;z-index:1;margin-top:auto;border:0;background:transparent;padding:14px 5px;gap:10px}
+.app .sidebar .side-bottom .avatar{width:65px;height:65px;font-size:18px;border-radius:50%;background:linear-gradient(140deg,#fff,#9ac3ef);color:#16458d;border:3px solid #ffffff55;display:grid;place-items:center;position:relative;flex-shrink:0}
+.app .sidebar .side-bottom .avatar::after{content:"";position:absolute;right:-1px;bottom:1px;width:15px;height:15px;background:#21d53a;border:2px solid #083475;border-radius:50%}
+.app .sidebar .side-bottom strong{font-size:13px;color:white}
+.app .sidebar .side-bottom small{font-size:12px;color:#e0eeff}
+.app .workspace{background:linear-gradient(125deg,#f0f6ff,#dbeaff);min-width:0}
+.app .topbar{height:58px;justify-content:flex-end;padding:7px 25px 0}
+.app .topbar .breadcrumb{display:none}
+.app .topbar .top-actions{gap:10px}
+.app .topbar .environment{display:none}
+.app .topbar .top-avatar{display:none}
+.app .topbar .header-btn{border-radius:24px;background:#fff;padding:10px 15px;box-shadow:0 4px 12px #2f5d9b1e}
+.app main{padding:0 12px 28px}
+.ref-dashboard{max-width:1600px}
+.ref-intro{padding:0 11px;margin-top:-42px!important;margin-bottom:25px;min-height:95px}
+.ref-greeting{font-size:25px;color:#0c1430}
+.ref-intro h1{font-size:34px;color:#0b1435}
+.ref-intro p{font-size:16px;color:#17223a}
+.ref-mode{font-size:10px;align-self:end}
+.ref-dashboard .ref-banner{height:236px;grid-template-columns:25% 75%;border-radius:24px;margin-bottom:20px}
+.ref-banner-brand{background:linear-gradient(145deg,#061f5c,#006fe9);justify-content:center}
+.ref-banner-brand strong{font-size:18px}
+.ref-book{font-size:70px}
+/* Photo takes precedence once assets/graduation-photo.jpg is committed. */
+.ref-banner-photo{background-color:#1954a8;background-image:url('assets/graduation-photo.jpg'),url('assets/learn-afghan-graduation.svg');background-size:cover,cover;background-position:center 43%,center;background-repeat:no-repeat}
+.ref-gold-wave{bottom:17px;border-top:6px solid #f6c755}
+.ref-stats{gap:10px;margin-bottom:22px}
+.ref-stat{border-radius:22px;min-height:148px;padding:12px 5px;background:#f9fcff;box-shadow:0 5px 12px #1e6eb12c}
+.ref-stat-icon{width:63px;height:63px;border-radius:50%;font-size:40px}
+.ref-stat-label{font-size:13px}
+.ref-stat strong{font-size:26px}
+.ref-panels{grid-template-columns:1.15fr .92fr 1fr;gap:12px}
+.ref-panel{min-height:258px;border-radius:20px;padding:17px 12px;box-shadow:0 5px 12px #2f76bb29;background:#f9fcff}
+.ref-panel h2{font-size:16px;letter-spacing:-.2px;margin-bottom:20px}
+.ref-quick{background:#e5f1ff;min-height:78px;border-radius:12px;font-size:12px}
+.ref-ring{border:0;background:conic-gradient(#2ad32c 0 93%,#ffd333 93% 98%,#fc3232 98% 100%);position:relative}
+.ref-ring::before{content:"";position:absolute;inset:14px;background:#f9fcff;border-radius:50%}
+.ref-ring>div{position:relative;z-index:1}
+.ref-legend{gap:10px}
+.ref-data-note{font-size:10px}
+@media(max-width:1200px){.ref-stats{grid-template-columns:repeat(3,minmax(0,1fr))}.ref-panels{grid-template-columns:1fr 1fr}.ref-panels .ref-panel:last-child{grid-column:span 2}.ref-intro{margin-top:0!important}}
+@media(max-width:800px){.ref-panels{grid-template-columns:1fr}.ref-panels .ref-panel:last-child{grid-column:auto}.ref-intro{min-height:0}.ref-dashboard .ref-banner{height:175px}}
+@media(max-width:700px){.app .sidebar{position:fixed;z-index:12;min-height:100dvh;width:265px;transform:translateX(-110%)}.app .sidebar.open{transform:translateX(0)}.ref-stats{grid-template-columns:repeat(2,minmax(0,1fr))}.ref-dashboard .ref-banner{height:160px;grid-template-columns:35% 65%}.ref-intro{padding:8px}.ref-intro h1{font-size:24px}.ref-greeting{font-size:19px}.app .topbar{height:55px}}
