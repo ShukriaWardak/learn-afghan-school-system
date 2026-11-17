@@ -102,6 +102,7 @@ $tables = [
     'personnel'=>['003_personnel.sql', ['id', 'code', 'full_name', 'kind', 'branch_id', 'department_id', 'job_title', 'status', 'version', 'created_at', 'updated_at']],
     'students'=>['004_students.sql', ['id', 'student_code', 'full_name', 'branch_id', 'grade_level', 'status', 'version', 'created_at', 'updated_at']],
     'student_attendance'=>['005_student_attendance.sql', ['id', 'student_id', 'attendance_date', 'status', 'version', 'recorded_by', 'created_at', 'updated_at']],
+    'task_log'=>['007_task_log.sql', ['id','owner_user_id','task_date','title','description','due_date','status','progress_notes','version','created_at','updated_at']],
     'personnel_attendance'=>['006_personnel_attendance.sql', ['id', 'personnel_id', 'attendance_date', 'status', 'version', 'recorded_by', 'created_at', 'updated_at']],
 ];
 $usersReady = false;
@@ -175,3 +176,4 @@ $escape = static fn (string $text): string => htmlspecialchars($text, ENT_QUOTES
 </div>
 <footer>This local page inspects setup without changing records. Database passwords, account names and password hashes are not displayed. Passing these checks is a starting point for local testing, not production approval.</footer>
 </main></body></html>
+

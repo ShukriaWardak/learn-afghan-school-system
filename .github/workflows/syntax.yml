@@ -20,6 +20,7 @@ jobs:
           node --check personnel-attendance.js
           node --check reports.js
           node --check approvals.js
+          node --check task-log.js
       - name: PHP syntax
         run: |
           php -l check-setup.php
@@ -32,6 +33,7 @@ jobs:
           node tests/registry.cjs
           node tests/students.cjs
           node tests/approvals.cjs
+          node tests/task-log.cjs
       - name: Required files
         run: |
           test -f database/schema.sql
@@ -109,7 +111,10 @@ jobs:
           node tests/reports-browser.cjs
           node tests/approvals-integration.cjs
           node tests/approvals-browser.cjs
+          node tests/task-log-integration.cjs
+          node tests/task-log-browser.cjs
       - name: Server diagnostics
         if: failure()
         run: cat /tmp/learn-php-test.log || true
+
 
