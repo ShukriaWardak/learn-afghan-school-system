@@ -69,7 +69,7 @@ const contrast = (foreground, background) => {
     assert.ok(contrast(setupColors.foreground,setupColors.background)>=4.5);
     await page.getByRole('link',{name:'Check local setup'}).click();
     await page.getByRole('heading',{name:'Check your setup'}).waitFor();
-    assert.equal(await page.locator('[data-status="pass"]').count(),15);
+    assert.equal(await page.locator('[data-status="pass"]').count(),16);
     assert.equal(await page.locator('[data-status="fail"]').count(),0);
     await login(page,'test_super'); await directory(page);
     assert.match(await page.locator('#studentsCount').textContent(), /3 of 3/);
@@ -163,3 +163,4 @@ const contrast = (foreground, background) => {
     console.log('PASS: setup page, sign-in text contrast, filtering, required fields, escaped names, create/reload/edit, conflict recovery, dialog keyboard access, session expiry and role-limited UI');
   } finally { await browser.close(); }
 })().catch(error => {console.error(error);process.exit(1);});
+

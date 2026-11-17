@@ -21,6 +21,7 @@ const assert=require('node:assert/strict');
    await route.fulfill({status:200,contentType:'application/json',body:JSON.stringify(body)});
   });
   await page.goto('http://127.0.0.1:8099/index.html');
+  await page.waitForFunction(()=>document.querySelector('.environment')?.textContent.includes('AUTHENTICATED')); 
   await page.locator('[data-page="tasks"]').click();
   await page.locator('#taskAdd').click();await page.locator('[name=title]').fill('<script>synthetic</script>');
   await page.locator('[name=description]').fill('شرح آزمایشی');
