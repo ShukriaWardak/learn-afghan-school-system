@@ -34,7 +34,7 @@ function referenceNavigation(){
  const mainItems=[
   ["overview","⌂","Dashboard"],["students","♧","Students"],
   ["teachers","🎓","Teachers"],["users","♙","Users & Roles"],
-  ["staff","▣","HR"],["finance","▥","Finance"],
+  ["tasks","✓","Task Log"],["staff","▣","HR"],["finance","▥","Finance"],
   ["attendance","▦","Attendance"],["forms","▤","Classes"],
   ["reports","▥","Reports"],["settings","⚙","Settings"]
  ];
@@ -48,3 +48,4 @@ navigation=referenceNavigation;
 
 /* Re-render after the new view is registered. Server session loading remains owned by Live. */
 if(!document.documentElement.classList.contains("auth-required"))render();
+
