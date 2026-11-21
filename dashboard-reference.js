@@ -18,7 +18,7 @@ function referenceOverview(){
  +card('👥','Students',students,'blue')+card('🎓','Teachers',teachers,'purple')+card('👥','Staff (HR)',staff,'yellow')+card('💳','Finance (AFN)',finance,'green')+card('🗓','Attendance',attendance,'turquoise')+card('🏫','Branches',branches,'violet')
  +'</div><div class="ref-panels">'
  +'<section class="ref-panel"><h2>Student Enrollment (This Term)</h2><div class="ref-chart"><svg viewBox="0 0 320 150" role="img" aria-label="Illustrative enrollment trend; not database information"><g stroke="#dce7f4" stroke-width="1"><path d="M15 20H310M15 55H310M15 90H310M15 125H310"/></g><path d="'+line+'" stroke="#167ddd" fill="none" stroke-width="4" stroke-linejoin="round"/><g fill="#167ddd">'+dots+'</g></svg><div class="ref-months"><span>Aug</span><span>Sep</span><span>Oct</span><span>Nov</span></div></div><small>Illustrative chart · enrollment history not connected</small></section>'
- +'<section class="ref-panel"><h2>Quick Actions</h2><div class="ref-quick-grid">'+quick('Add Student','👤','students')+quick('Add Teacher','🎓','teachers')+quick('Create Class','📖','forms')+quick('Generate Report','📊','reports')+'</div><small>Opening a module does not bypass permissions.</small></section>'
+ +'<section class="ref-panel"><h2>Quick Actions</h2><div class="ref-quick-grid">'+quick('Add Student','👤','students')+quick('Add Teacher','🎓','teachers')+quick('Open Classes','📖','classes')+quick('Generate Report','📊','reports')+'</div><small>Opening a module does not bypass permissions.</small></section>'
  +'<section class="ref-panel"><h2>Attendance Overview</h2><div class="ref-attendance"><div class="ref-ring"><div><strong>—</strong><small>Not available</small></div></div><div class="ref-legend"><span><i class="present"></i>Present <b>—</b></span><span><i class="absent"></i>Absent <b>—</b></span><span><i class="late"></i>Late <b>—</b></span></div></div><small>Live attendance percentage requires an aggregate endpoint.</small></section>'
  +'</div><p class="ref-data-note">'+(live?'Students (4,545), teachers (81) and branches (25) are institution-provided totals, not calculated from this local database. Other values await verified aggregates.':'Institution-provided reference totals: 4,545 students, 81 teachers and 25 branches. Finance, staffing and attendance await verification.')+'</p></div>';
 }
@@ -35,7 +35,7 @@ function referenceNavigation(){
   ["overview","⌂","Dashboard"],["students","♧","Students"],
   ["teachers","🎓","Teachers"],["users","♙","Users & Roles"],
   ["tasks","✓","Task Log"],["staff","▣","HR"],["finance","▥","Finance"],
-  ["attendance","▦","Attendance"],["forms","▤","Classes"],
+  ["attendance","▦","Attendance"],["classes","▤","Classes"],
   ["reports","▥","Reports"],["settings","⚙","Settings"]
  ];
  const moreItems=NAV.flatMap(group=>group[1]).filter(item=>!mainItems.some(primary=>primary[0]===item[0]));
