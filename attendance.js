@@ -5,11 +5,11 @@ const Attendance = {
     const d=new Date();
     return [d.getFullYear(),String(d.getMonth()+1).padStart(2,"0"),String(d.getDate()).padStart(2,"0")].join("-");
   })(),
-  error:"", loading:false, sequence:0, dialog:null,
+  gradeFilter:"", statusFilter:"", error:"", loading:false, sequence:0, dialog:null,
   canRead() {return Live.active && ["super_admin","zone_admin","branch_admin"].includes(Live.user?.role);},
   canWrite() {return Live.active && Live.user?.role==="super_admin";},
   reset() {
-    ++this.sequence;this.records=[];this.students=[];this.error="";this.loading=false;
+    ++this.sequence;this.gradeFilter="";this.statusFilter="";this.records=[];this.students=[];this.error="";this.loading=false;
     this.dialog?.close();this.dialog=null;
   },
   async load() {
@@ -25,6 +25,7 @@ const Attendance = {
       if(!currentSession())return;
       if(!Array.isArray(attendance.attendance) || (students && !Array.isArray(students.students)))throw new Error("Unexpected attendance response");
       this.records=attendance.attendance;
+      if(this.gradeFilter&&!this.records.some(row=>String(row.grade_level)===this.gradeFilter))this.gradeFilter="";
       this.students=students?.students || [];
     } catch(error) {
       if(!currentSession())return;
@@ -34,6 +35,10 @@ const Attendance = {
       if(currentSession()){this.loading=false;if(current==="attendance")render();}
     }
   },
+  filteredRecords() {
+    return this.records.filter(row=>(!this.gradeFilter || String(row.grade_level)===this.gradeFilter)
+      && (!this.statusFilter || row.status===this.statusFilter));
+  },
   view() {
     if(!this.canRead())return heading("Student Attendance","Your role cannot access attendance records.");
     const refresh='<button id="attendanceRefresh" class="ghost-btn">Refresh attendance</button>';
@@ -42,17 +47,22 @@ const Attendance = {
     const counts={present:0,absent:0,late:0,excused:0};
     this.records.forEach(row=>{if(Object.prototype.hasOwnProperty.call(counts,row.status))counts[row.status]++;});
     const actions='<div class="toolbar">'+(this.canWrite()?'<button id="attendanceAdd" class="primary-btn">+ Record attendance</button>':"")+refresh+'</div>';
-    const rows=this.records.map(row=>'<tr>'
+    const visible=this.filteredRecords();
+    const grades=[...new Set(this.records.map(row=>String(row.grade_level)))].sort((a,b)=>a.localeCompare(b,undefined,{numeric:true}));
+    const options=(values,selected)=>values.map(value=>'<option value="'+escapeHtml(value)+'"'+(value===selected?' selected':'')+'>'+escapeHtml(value)+'</option>').join("");
+    const rows=visible.map(row=>'<tr>'
       +[row.student_code,row.full_name,row.branch_name,row.grade_level,row.attendance_date,row.status].map(val=>'<td>'+escapeHtml(val)+'</td>').join("")
       +(this.canWrite()?'<td><button class="ghost-btn" data-attendance-edit="'+Number(row.id)+'">Edit</button></td>':"")+'</tr>').join("");
     return heading("Student Attendance","Daily records for students in your authorized scope. Super administrators can record or correct entries.",actions)
-      +'<div class="toolbar"><label>Attendance date <input id="attendanceDate" type="date" class="field" value="'+escapeHtml(this.date)+'" required></label></div>'
+      +'<div class="toolbar"><label>Attendance date <input id="attendanceDate" type="date" class="field" value="'+escapeHtml(this.date)+'" required></label>'
+      +'<label>Grade <select id="attendanceGradeFilter" class="field"><option value="">All grades</option>'+options(grades,this.gradeFilter)+'</select></label>'
+      +'<label>Status <select id="attendanceStatusFilter" class="field"><option value="">All statuses</option>'+options(Object.keys(counts),this.statusFilter)+'</select></label></div>'
       +'<div class="metrics">'+metric("Recorded",this.records.length,"▤","Selected day")
       +metric("Present",counts.present,"✓","Recorded entries")
       +metric("Absent",counts.absent,"○","Recorded entries")
       +metric("Late / excused",counts.late+counts.excused,"◷","Recorded entries")+'</div>'
-      +panel("Daily attendance",'<p id="attendanceCount" role="status">'+this.records.length+' records for '+escapeHtml(this.date)+'</p>'
-      +(rows?'<div class="table-wrap"><table><thead><tr><th>Student code</th><th>Full name</th><th>Branch</th><th>Grade</th><th>Date</th><th>Status</th>'+(this.canWrite()?'<th>Action</th>':"")+'</tr></thead><tbody>'+rows+'</tbody></table></div>':'<div class="empty">No attendance recorded for this date.</div>')
+      +panel("Daily attendance",'<p id="attendanceCount" role="status">'+this.records.length+' records for '+escapeHtml(this.date)+(this.gradeFilter||this.statusFilter?' · '+visible.length+' matching':'')+'</p>'
+      +(rows?'<div class="table-wrap"><table><thead><tr><th>Student code</th><th>Full name</th><th>Branch</th><th>Grade</th><th>Date</th><th>Status</th>'+(this.canWrite()?'<th>Action</th>':"")+'</tr></thead><tbody>'+rows+'</tbody></table></div>':'<div class="empty">'+(this.records.length?'No records match these filters.':'No attendance recorded for this date.')+'</div>')
       +'<p class="muted">Only recorded entries are displayed; a missing entry does not mean absence. Up to 1,000 records per date are loaded.</p>');
   },
   bind() {
@@ -61,6 +71,10 @@ const Attendance = {
       const next=event.target.value;
       if(/^\d{4}-\d{2}-\d{2}$/.test(next)){this.date=next;this.load();}
     };
+    for(const [id,key] of [["attendanceGradeFilter","gradeFilter"],["attendanceStatusFilter","statusFilter"]]){
+      const control=document.getElementById(id);
+      if(control)control.onchange=()=>{this[key]=control.value;render();document.getElementById(id)?.focus();};
+    }
     const refresh=document.querySelector("#attendanceRefresh");
     if(refresh)refresh.onclick=()=>this.load();
     const add=document.querySelector("#attendanceAdd");
@@ -123,3 +137,4 @@ const Attendance = {
     };
   }
 };
+
