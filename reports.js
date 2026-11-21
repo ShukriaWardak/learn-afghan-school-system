@@ -1,13 +1,13 @@
 "use strict";
 // Aggregate-only school reporting. The server controls scope and exports; no PII is cached.
 const Reports = {
-  data:null,error:"",loading:false,downloading:false,sequence:0,
+  data:null,error:"",loading:false,downloading:false,sequence:0,branchSearch:"",
   date:(()=>{
     const now=new Date();
     return [now.getFullYear(),String(now.getMonth()+1).padStart(2,"0"),String(now.getDate()).padStart(2,"0")].join("-");
   })(),
   canRead() {return Live.active && ["super_admin","zone_admin","branch_admin"].includes(Live.user?.role);},
-  reset() {++this.sequence;this.data=null;this.error="";this.loading=false;this.downloading=false;},
+  reset() {this.branchSearch="";++this.sequence;this.data=null;this.error="";this.loading=false;this.downloading=false;},
   async load() {
     const seq=++this.sequence,id=Live.user?.id,csrf=Live.csrf;
     const currentSession=()=>seq===this.sequence && Live.active && Live.user?.id===id && Live.csrf===csrf;
@@ -41,7 +41,7 @@ const Reports = {
     const attendanceRows=attendanceTypes.map(([label,values])=>'<tr>'
       +[label,values.present,values.absent,values.late,values.excused]
         .map(value=>'<td>'+escapeHtml(value)+'</td>').join("")+'</tr>').join("");
-    const branches=d.branches.map(b=>'<tr>'
+    const branches=d.branches.map(b=>'<tr data-report-branch>'
       +[b.zone_name,b.code,b.name,b.status,b.students,b.teachers,b.staff,b.student_attendance,b.personnel_attendance]
         .map(value=>'<td>'+escapeHtml(value)+'</td>').join("")+'</tr>').join("");
     const truncated=d.branches_truncated?'<div class="note" role="status">Only the first '+d.branch_limit+' branches are shown. Export is disabled until a complete report is available.</div>':"";
@@ -62,11 +62,27 @@ const Reports = {
         +'<p class="muted">These are counts of recorded entries only; missing records are not absences or present days.</p>')
       +panel("Branch summary",'<p id="reportCount" role="status">'+d.branches.length+' of '+d.totals.branches+' accessible branches listed</p>'
         +truncated
+        +'<label>Find a branch <input class="field" type="search" id="reportBranchSearch" placeholder="Branch name or code" value="'+escapeHtml(this.branchSearch)+'"></label><p id="reportBranchMatches" role="status"></p>'
         +(branches?'<div class="table-wrap"><table><thead><tr><th>Zone</th><th>Code</th><th>Branch</th><th>Status</th><th>Students</th><th>Teachers</th><th>Staff</th><th>Student attendance</th><th>Personnel attendance</th></tr></thead><tbody>'+branches+'</tbody></table></div>'
           :'<div class="empty">No branches available to this account.</div>')
         +'<p class="muted">CSV exports contain only branch-level aggregates, not individual student or employee records. Data is intended for review, not official reporting.</p>');
   },
   bind() {
+    const search=document.querySelector("#reportBranchSearch");
+    if(search) {
+      const filter=()=>{
+        const query=this.branchSearch.trim().toLowerCase();
+        let matches=0;
+        for(const row of document.querySelectorAll("[data-report-branch]")){
+          const searchable=[row.cells[0],row.cells[1],row.cells[2]].map(cell=>cell.textContent).join(" ").toLowerCase();
+          row.hidden=!searchable.includes(query);
+          if(!row.hidden)matches++;
+        }
+        document.querySelector("#reportBranchMatches").textContent=query ? matches+" matching branches. Totals and CSV still cover all authorized branches." : "";
+      };
+      search.oninput=()=>{this.branchSearch=search.value;filter();};
+      filter();
+    }
     const date=document.querySelector("#reportDate");
     if(date)date.onchange=e=>{if(/^\d{4}-\d{2}-\d{2}$/.test(e.target.value)){this.date=e.target.value;this.load();}};
     const refresh=document.querySelector("#reportRefresh");
@@ -96,11 +112,14 @@ const Reports = {
         a.click();toast("Authorized aggregate CSV downloaded");
       }finally{setTimeout(()=>URL.revokeObjectURL(url),1000);}
     }catch(error){
+      if(seq!==this.sequence||!Live.active||Live.user?.id!==uid||Live.csrf!==csrf)return;
       if(error.status===401){Live.showLogin();return;}
-      if(seq===this.sequence&&Live.active)toast(error.message);
+      toast(error.message);
     }finally{
-      this.downloading=false;
-      if(button&&button.isConnected&&seq===this.sequence)button.disabled=false;
+      if(seq===this.sequence){
+        this.downloading=false;
+        if(button?.isConnected)button.disabled=false;
+      }
     }
   }
 };
